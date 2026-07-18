@@ -9,118 +9,83 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --paper:#E7E4DD;
-    --card:#FBFAF7;
-    --ink:#17181A;
-    --ink-2:#5C5F63;
-    --rule:#C8C4BA;
-    --stamp:#0F6B3F;
-    --alarm:#B3261E;
-    --wait:#8A6A12;
-    --steel:#1F2937;
-    --r:3px;
+    --paper:#E7E4DD; --card:#FBFAF7; --ink:#17181A; --ink-2:#5C5F63;
+    --rule:#C8C4BA; --stamp:#0F6B3F; --alarm:#B3261E; --wait:#8A6A12;
+    --steel:#1F2937; --r:3px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{background:var(--paper);color:var(--ink)}
-  body{
-    font-family:'IBM Plex Sans KR',system-ui,sans-serif;
-    font-size:15px;line-height:1.55;
-    padding:0 0 env(safe-area-inset-bottom);
-    -webkit-font-smoothing:antialiased;
-  }
+  body{font-family:'IBM Plex Sans KR',system-ui,sans-serif;font-size:15px;line-height:1.55;
+    padding:0 0 env(safe-area-inset-bottom);-webkit-font-smoothing:antialiased}
   .wrap{max-width:560px;margin:0 auto;padding:0 14px 40px}
-  mono,.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+  .mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
 
-  /* ── 헤더 ── */
   header{padding:22px 0 14px;border-bottom:2px solid var(--steel)}
-  .eyebrow{
-    font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.18em;
-    text-transform:uppercase;color:var(--ink-2)
-  }
+  .eyebrow{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--ink-2)}
   h1{font-size:25px;font-weight:700;letter-spacing:-.02em;margin-top:2px}
   .sub{font-size:13px;color:var(--ink-2);margin-top:6px}
-
-  /* ── 지원 상태 ── */
-  .status{
-    display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 0;
-    font-family:'IBM Plex Mono',monospace;font-size:11.5px
-  }
+  .status{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 0;
+    font-family:'IBM Plex Mono',monospace;font-size:11.5px}
   .chip{border:1px solid var(--rule);border-radius:var(--r);padding:3px 8px;background:var(--card)}
   .chip.ok{border-color:var(--stamp);color:var(--stamp)}
   .chip.no{border-color:var(--alarm);color:var(--alarm)}
 
-  /* ── 카메라 ── */
-  .stage{position:relative;margin-top:18px;background:#000;border:2px solid var(--steel);border-radius:var(--r);overflow:hidden;aspect-ratio:4/3}
-  video,canvas.preview{width:100%;height:100%;object-fit:cover;display:block}
-  .guide{position:absolute;inset:0;pointer-events:none}
-  .guide i{position:absolute;width:26px;height:26px;border:2px solid #fff;opacity:.85}
-  .guide i:nth-child(1){top:14%;left:6%;border-right:0;border-bottom:0}
-  .guide i:nth-child(2){top:14%;right:6%;border-left:0;border-bottom:0}
-  .guide i:nth-child(3){bottom:14%;left:6%;border-right:0;border-top:0}
-  .guide i:nth-child(4){bottom:14%;right:6%;border-left:0;border-top:0}
-  .hint{
-    position:absolute;left:0;right:0;bottom:0;padding:8px 10px;
-    background:linear-gradient(transparent,rgba(0,0,0,.72));
-    color:#fff;font-size:12px;font-family:'IBM Plex Mono',monospace
-  }
-  .idle{position:absolute;inset:0;display:grid;place-items:center;color:#8b8f94;font-size:13px}
+  /* 안내 배너 */
+  .banner{margin-top:14px;background:#FFF6D9;border:1px solid #E0CE84;border-left:5px solid var(--wait);
+    border-radius:var(--r);padding:11px 13px;font-size:13.5px;line-height:1.6}
+  .banner b{display:block;margin-bottom:3px}
 
-  /* ── 컨트롤 ── */
+  /* 카메라 */
+  .stage{position:relative;margin-top:16px;background:#000;border:2px solid var(--steel);
+    border-radius:var(--r);overflow:hidden;aspect-ratio:3/4}
+  video,canvas.preview{width:100%;height:100%;object-fit:cover;display:block}
+  .band{position:absolute;left:4%;right:4%;top:50%;transform:translateY(-50%);
+    height:23%;border:2px dashed rgba(255,255,255,.9);border-radius:2px;pointer-events:none}
+  .band::after{content:'긴 바코드를 이 띠 안에 가득 채우세요';position:absolute;left:0;right:0;top:-25px;
+    text-align:center;color:#fff;font-size:11.5px;font-family:'IBM Plex Mono',monospace;
+    text-shadow:0 1px 3px #000}
+  .hint{position:absolute;left:0;right:0;bottom:0;padding:8px 10px;
+    background:linear-gradient(transparent,rgba(0,0,0,.75));color:#fff;font-size:12px;
+    font-family:'IBM Plex Mono',monospace}
+  .idle{position:absolute;inset:0;display:grid;place-items:center;color:#8b8f94;font-size:13px;padding:20px;text-align:center}
+
   .controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
-  button,.filebtn{
-    font-family:'IBM Plex Sans KR',sans-serif;font-size:14.5px;font-weight:600;
-    padding:13px 10px;border:2px solid var(--steel);border-radius:var(--r);
-    background:var(--card);color:var(--ink);cursor:pointer;text-align:center;
-    transition:background .12s,color .12s
-  }
+  button,.filebtn{font-family:'IBM Plex Sans KR',sans-serif;font-size:14.5px;font-weight:600;
+    padding:13px 10px;border:2px solid var(--steel);border-radius:var(--r);background:var(--card);
+    color:var(--ink);cursor:pointer;text-align:center;transition:background .12s,color .12s}
   button:active,.filebtn:active{background:var(--steel);color:#fff}
   button.primary{background:var(--steel);color:#fff}
-  button.primary:active{background:#000}
+  button.shoot{background:var(--stamp);color:#fff;border-color:var(--stamp)}
   button:disabled{opacity:.4;cursor:not-allowed}
   button:focus-visible,.filebtn:focus-visible{outline:3px solid var(--wait);outline-offset:2px}
   .wide{grid-column:1/-1}
   input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
   .zoomrow{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:12.5px;color:var(--ink-2)}
   .zoomrow input{flex:1}
+  .zoomwarn{color:var(--alarm);font-size:12px;margin-top:4px;display:none}
 
-  /* ── 계측 ── */
-  .meter{
-    display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:16px;
-    background:var(--rule);border:1px solid var(--rule);border-radius:var(--r);overflow:hidden
-  }
+  .meter{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:16px;
+    background:var(--rule);border:1px solid var(--rule);border-radius:var(--r);overflow:hidden}
   .meter div{background:var(--card);padding:9px 10px}
   .meter b{display:block;font-family:'IBM Plex Mono',monospace;font-size:19px;font-weight:600;letter-spacing:-.02em}
   .meter span{font-size:10.5px;color:var(--ink-2);letter-spacing:.04em}
 
-  /* ── 판정 결과 ── */
-  h2{
-    font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);
-    font-family:'IBM Plex Mono',monospace;margin:26px 0 8px;
-    padding-bottom:6px;border-bottom:1px solid var(--rule)
-  }
-  .rec{
-    display:flex;gap:0;background:var(--card);border:1px solid var(--rule);
-    border-left:5px solid var(--stamp);border-radius:var(--r);margin-bottom:8px;overflow:hidden
-  }
+  h2{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);
+    font-family:'IBM Plex Mono',monospace;margin:26px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--rule)}
+  .rec{background:var(--card);border:1px solid var(--rule);border-left:5px solid var(--stamp);
+    border-radius:var(--r);margin-bottom:8px;padding:10px 12px}
   .rec.warn{border-left-color:var(--wait)}
   .rec.bad{border-left-color:var(--alarm)}
-  .rec .body{padding:10px 12px;flex:1;min-width:0}
-  .rec .kind{
-    font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.12em;
-    text-transform:uppercase;color:var(--ink-2)
-  }
-  .rec .val{
-    font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:600;
-    word-break:break-all;letter-spacing:-.01em;margin-top:1px
-  }
+  .rec .kind{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.12em;
+    text-transform:uppercase;color:var(--ink-2)}
+  .rec .val{font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:600;
+    word-break:break-all;letter-spacing:-.01em;margin-top:1px}
   .rec .note{font-size:12px;color:var(--ink-2);margin-top:3px}
   .rec .val em{font-style:normal;background:#F4E9A8;padding:0 3px;border-radius:2px}
-  .empty{
-    border:1px dashed var(--rule);border-radius:var(--r);padding:20px;
-    text-align:center;color:var(--ink-2);font-size:13px;background:rgba(255,255,255,.4)
-  }
+  .empty{border:1px dashed var(--rule);border-radius:var(--r);padding:20px;text-align:center;
+    color:var(--ink-2);font-size:13px;background:rgba(255,255,255,.4)}
 
-  /* ── 라벨 요약 ── */
   .card{background:var(--card);border:1px solid var(--rule);border-radius:var(--r);padding:12px 14px}
   .row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px dotted var(--rule)}
   .row:last-child{border-bottom:0}
@@ -128,37 +93,41 @@
   .row dd{font-family:'IBM Plex Mono',monospace;font-size:14px;text-align:right;word-break:break-all}
   .row dd.miss{color:var(--ink-2);font-style:italic}
 
-  /* ── 로그 ── */
-  .log{
-    background:var(--steel);color:#D6D3CB;border-radius:var(--r);padding:10px 12px;
-    font-family:'IBM Plex Mono',monospace;font-size:11.5px;line-height:1.7;
-    max-height:190px;overflow:auto;white-space:pre-wrap;word-break:break-all
-  }
+  .log{background:var(--steel);color:#D6D3CB;border-radius:var(--r);padding:10px 12px;
+    font-family:'IBM Plex Mono',monospace;font-size:11.5px;line-height:1.7;max-height:190px;
+    overflow:auto;white-space:pre-wrap;word-break:break-all}
   footer{margin-top:26px;font-size:12px;color:var(--ink-2);line-height:1.7}
   footer b{color:var(--ink)}
-  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
 <div class="wrap">
 
 <header>
-  <div class="eyebrow">현장 검증 / 01</div>
+  <div class="eyebrow">현장 검증 / 02</div>
   <h1>라벨 인식 테스트</h1>
-  <p class="sub">단말기 박스 라벨을 비추면 일련번호와 IMEI를 읽어냅니다. 흰 라벨과 검정 라벨을 모두 시험해 보세요.</p>
+  <p class="sub">긴 바코드는 양 끝까지 화면에 다 들어와야 읽힙니다. 확대하지 말고 라벨 전체를 비추세요.</p>
   <div class="status" id="status"></div>
 </header>
+
+<div class="banner">
+  <b>이렇게 잡으세요</b>
+  폰을 <strong>가로로</strong> 눕히고, 라벨에서 <strong>15~25cm</strong> 떨어뜨립니다. 확대는 1배 그대로 두세요. 잘 안 잡히면 <strong>촬영해서 인식</strong>을 쓰면 됩니다.
+</div>
 
 <div class="stage">
   <video id="video" playsinline muted></video>
   <canvas class="preview" id="still" hidden></canvas>
-  <div class="guide"><i></i><i></i><i></i><i></i></div>
+  <div class="band" id="band" hidden></div>
   <div class="idle" id="idle">카메라 꺼짐</div>
   <div class="hint" id="hint" hidden></div>
 </div>
 
 <div class="controls">
   <button class="primary" id="btnStart">카메라 켜기</button>
+  <button class="shoot" id="btnShot" disabled>촬영해서 인식</button>
+  <button id="btnFocus" disabled>초점 다시</button>
   <button id="btnTorch" disabled>손전등</button>
   <button id="btnOcr" disabled>글자 읽기</button>
   <label class="filebtn" for="file" tabindex="0" role="button">사진으로 시험</label>
@@ -169,6 +138,7 @@
 <div class="zoomrow" id="zoomRow" hidden>
   <span>확대</span><input type="range" id="zoom" min="1" max="5" step="0.1" value="1"><span class="mono" id="zoomVal">1.0×</span>
 </div>
+<div class="zoomwarn" id="zoomWarn">확대하면 긴 바코드의 양 끝이 잘려서 읽히지 않습니다.</div>
 
 <div class="meter">
   <div><b id="mCount">0</b><span>인식 항목</span></div>
@@ -177,7 +147,7 @@
 </div>
 
 <h2>인식 결과</h2>
-<div id="results"><div class="empty">아직 읽은 코드가 없습니다.<br>카메라를 켜고 라벨의 바코드에 맞춰 보세요.</div></div>
+<div id="results"><div class="empty">아직 읽은 코드가 없습니다.<br>카메라를 켜고 라벨 전체를 비춰 보세요.</div></div>
 
 <h2>라벨 요약</h2>
 <div class="card">
@@ -195,8 +165,8 @@
 <button class="wide" id="btnCopy" style="margin-top:8px">기록 복사</button>
 
 <footer>
-  <b>확인할 것</b> — 검정 광택 라벨이 흰 라벨만큼 잘 읽히는지, 몇 cm에서 잡히는지, 손전등이 도움이 되는지 아니면 반사로 방해가 되는지.<br><br>
-  일련번호와 IMEI는 바코드로만 읽습니다. 글자 인식은 바코드에 없는 모델코드와 용량을 얻는 용도이며, 같은 라벨의 일련번호를 대조해 초점이 맞았는지 확인합니다.
+  <b>확인할 것</b> — 일련번호(S/N)와 IMEI 바코드가 잡히는지, 몇 cm에서 잡히는지, 손전등이 도움이 되는지 아니면 반사로 방해가 되는지.<br><br>
+  일련번호와 IMEI는 바코드로만 읽습니다. 글자 인식은 바코드에 없는 모델코드와 용량을 얻는 용도입니다.
 </footer>
 
 </div>
@@ -205,69 +175,61 @@
 (function(){
   'use strict';
   const $ = id => document.getElementById(id);
-  const video=$('video'), still=$('still'), idle=$('idle'), hint=$('hint');
+  const video=$('video'), still=$('still'), idle=$('idle'), hint=$('hint'), band=$('band');
   const results=$('results'), logEl=$('log');
-  const state={ stream:null, track:null, detector:null, running:false,
-                frames:0, t0:0, first:null, torch:false, items:new Map(), ocr:null };
+  const state={ stream:null, track:null, detector:null, imgcap:null, running:false,
+                frames:0, t0:0, first:null, torch:false, items:new Map(),
+                sawLong:false, sawSquare:false, advised:false };
 
-  /* ── 기록 ── */
   const lines=[];
   function log(msg){
     const t=new Date().toTimeString().slice(0,8);
     lines.push(t+'  '+msg);
-    logEl.textContent=lines.slice(-120).join('\n');
+    logEl.textContent=lines.slice(-140).join('\n');
     logEl.scrollTop=logEl.scrollHeight;
   }
 
-  /* ── 지원 상태 ── */
   const chips=[];
   function chip(label,ok){ chips.push('<span class="chip '+(ok?'ok':'no')+'">'+label+'</span>'); $('status').innerHTML=chips.join(''); }
-  const secure = window.isSecureContext;
+  const secure=window.isSecureContext;
   chip(secure?'보안 연결 OK':'보안 연결 아님', secure);
-  const hasCam = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+  const hasCam=!!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia);
   chip(hasCam?'카메라 OK':'카메라 불가', hasCam);
-  const hasBD = 'BarcodeDetector' in window;
+  const hasBD='BarcodeDetector' in window;
   chip(hasBD?'바코드 엔진 OK':'바코드 엔진 없음', hasBD);
-  if(!secure) log('경고: https 또는 localhost 에서 열어야 카메라가 켜집니다.');
-  if(!hasBD) log('경고: 이 브라우저는 바코드 엔진을 지원하지 않습니다. 안드로이드 크롬으로 열어 보세요.');
+  if(window.self!==window.top){ chip('액자 안 — 카메라 차단', false);
+    log('이 페이지가 다른 사이트 안에 끼워져 열렸습니다. 주소를 직접 열어 주세요.'); }
+  if(!hasBD) log('경고: 안드로이드 크롬으로 열어야 바코드 인식이 됩니다.');
 
-  /* ── 검증 ── */
   function luhn(s){
     if(!/^\d{15}$/.test(s)) return false;
     let sum=0;
-    for(let i=0;i<15;i++){
-      let d=+s[14-i];
-      if(i%2===1){ d*=2; if(d>9) d-=9; }
-      sum+=d;
-    }
+    for(let i=0;i<15;i++){ let d=+s[14-i]; if(i%2===1){ d*=2; if(d>9) d-=9; } sum+=d; }
     return sum%10===0;
   }
 
-  /* ── 분류 ── */
-  function classify(raw, fmt){
+  function classify(raw,fmt){
     const v=(raw||'').trim();
     if(/^\d{15}$/.test(v)){
       const ok=luhn(v);
       return { kind:'IMEI', value:v, level:ok?'ok':'bad',
-               note: ok? '체크섬 통과' : '체크섬 실패 — 잘못 읽혔을 수 있습니다' };
+               note: ok?'체크섬 통과':'체크섬 실패 — 잘못 읽혔을 수 있습니다' };
     }
     if(/^SM[A-Z0-9]{13}$/i.test(v)){
       const u=v.toUpperCase();
-      return { kind:'일련번호 (S/N)', value:u, level:'ok', serial:u.slice(8),
-               color:u[7], prefix:u.slice(0,7),
+      return { kind:'일련번호 (S/N)', value:u, level:'ok', serial:u.slice(8), color:u[7],
                note:'모델 '+u.slice(0,7)+' · 색상코드 '+u[7]+' · 일련 '+u.slice(8) };
     }
     if(/^\d{13}$/.test(v)) return { kind:'박스코드 (EAN-13)', value:v, level:'ok', note:'제품 SKU' };
     if(/^\d{7}$/.test(v))  return { kind:'일련번호 QR', value:v, level:'ok', serial:v, note:'뒤 7자리만 담긴 코드' };
-    if(/^89\d{30,}$/.test(v)) return { kind:'EID', value:v, level:'warn', note:'eSIM 식별자 — 재고 관리에는 쓰지 않습니다' };
+    if(/^89\d{28,}$/.test(v)) return { kind:'EID', value:v, level:'warn', note:'eSIM 식별자 — 재고 관리에는 쓰지 않습니다' };
     return { kind:'기타 ('+(fmt||'?')+')', value:v, level:'warn', note:'분류되지 않은 코드' };
   }
 
-  /* ── 결과 표시 ── */
   function render(){
     const arr=[...state.items.values()];
     if(!arr.length){
-      results.innerHTML='<div class="empty">아직 읽은 코드가 없습니다.<br>카메라를 켜고 라벨의 바코드에 맞춰 보세요.</div>';
+      results.innerHTML='<div class="empty">아직 읽은 코드가 없습니다.<br>카메라를 켜고 라벨 전체를 비춰 보세요.</div>';
       return;
     }
     const order={'일련번호 (S/N)':0,'IMEI':1,'일련번호 QR':2,'박스코드 (EAN-13)':3};
@@ -275,91 +237,103 @@
     results.innerHTML=arr.map(r=>{
       let val=r.value;
       if(r.kind==='일련번호 (S/N)') val=r.value.slice(0,8)+'<em>'+r.value.slice(8)+'</em>';
-      return '<div class="rec '+(r.level==='ok'?'':r.level)+'"><div class="body">'+
-             '<div class="kind">'+r.kind+'</div>'+
-             '<div class="val">'+val+'</div>'+
-             '<div class="note">'+r.note+'</div></div></div>';
+      return '<div class="rec '+(r.level==='ok'?'':r.level)+'">'+
+             '<div class="kind">'+r.kind+'</div><div class="val">'+val+'</div>'+
+             '<div class="note">'+r.note+'</div></div>';
     }).join('');
     $('mCount').textContent=arr.length;
     const sn=arr.find(r=>r.serial);
-    if(sn){
-      $('sSerial').textContent=sn.serial; $('sSerial').className='';
-      if(sn.color){ $('sColor').textContent=sn.color; $('sColor').className=''; }
-    }
+    if(sn){ $('sSerial').textContent=sn.serial; $('sSerial').className='';
+      if(sn.color){ $('sColor').textContent=sn.color; $('sColor').className=''; } }
   }
 
   function add(raw,fmt){
     const key=(raw||'').trim().toUpperCase();
-    if(!key || state.items.has(key)) return false;
+    if(!key) return false;
+    if(fmt==='code_128'||fmt==='code_39'||fmt==='ean_13'||fmt==='itf') state.sawLong=true;
+    else state.sawSquare=true;
+    if(state.items.has(key)) return false;
     const rec=classify(raw,fmt);
     state.items.set(key,rec);
     if(state.first===null && state.t0){
       state.first=Math.round(performance.now()-state.t0);
       $('mFirst').textContent=(state.first/1000).toFixed(1)+'초';
     }
-    log('읽음 ['+rec.kind+'] '+rec.value+(rec.level==='bad'?'  ← 확인 필요':''));
+    log('읽음 ['+rec.kind+' / '+fmt+'] '+rec.value+(rec.level==='bad'?'  ← 확인 필요':''));
     render();
     return true;
   }
 
-  /* ── 카메라 ── */
+  async function detectFrom(src,label){
+    if(!hasBD) return 0;
+    try{
+      const d=state.detector||new window.BarcodeDetector();
+      const found=await d.detect(src);
+      log(label+' 감지 '+found.length+'개');
+      found.forEach(b=>add(b.rawValue,b.format));
+      if(!found.length) log('코드를 찾지 못했습니다 — 초점과 거리를 확인하세요');
+      return found.length;
+    }catch(e){ log(label+' 실패: '+e.message); return 0; }
+  }
+
   async function start(){
     if(state.running) return stop();
     try{
       log('카메라 여는 중…');
       state.stream=await navigator.mediaDevices.getUserMedia({
-        video:{ facingMode:{ideal:'environment'},
-                width:{ideal:1920}, height:{ideal:1080},
-                advanced:[{focusMode:'continuous'}] },
-        audio:false
-      });
-      video.srcObject=state.stream;
-      await video.play();
+        video:{ facingMode:{ideal:'environment'}, width:{ideal:1920}, height:{ideal:1080},
+                advanced:[{focusMode:'continuous'}] }, audio:false });
+      video.srcObject=state.stream; await video.play();
       state.track=state.stream.getVideoTracks()[0];
-      const s=state.track.getSettings ? state.track.getSettings() : {};
+      const s=state.track.getSettings?state.track.getSettings():{};
       log('카메라 켜짐 '+(s.width||'?')+'×'+(s.height||'?'));
 
-      const caps = state.track.getCapabilities ? state.track.getCapabilities() : {};
-      if(caps.torch){ $('btnTorch').disabled=false; log('손전등 사용 가능'); }
-      else log('손전등 미지원 기기');
+      const caps=state.track.getCapabilities?state.track.getCapabilities():{};
+      if(caps.torch){ $('btnTorch').disabled=false; }
       if(caps.zoom){
-        const z=$('zoom'); z.min=caps.zoom.min; z.max=caps.zoom.max;
-        z.step=caps.zoom.step||0.1; z.value=s.zoom||caps.zoom.min;
-        $('zoomRow').hidden=false;
-        $('zoomVal').textContent=(+z.value).toFixed(1)+'×';
+        const z=$('zoom'); z.min=caps.zoom.min; z.max=caps.zoom.max; z.step=caps.zoom.step||0.1;
+        z.value=caps.zoom.min; $('zoomRow').hidden=false;
+        $('zoomVal').textContent=(+caps.zoom.min).toFixed(1)+'×';
+        try{ await state.track.applyConstraints({advanced:[{zoom:caps.zoom.min}]});
+             log('확대를 1배로 맞췄습니다'); }catch(_){}
+      }
+      if('ImageCapture' in window){
+        try{ state.imgcap=new window.ImageCapture(state.track); log('고해상도 촬영 사용 가능'); }
+        catch(_){ state.imgcap=null; }
       }
 
       if(hasBD){
-        const supported=await window.BarcodeDetector.getSupportedFormats();
-        const want=['code_128','ean_13','qr_code','code_39','itf','data_matrix','ean_8'];
-        const use=want.filter(f=>supported.includes(f));
+        const sup=await window.BarcodeDetector.getSupportedFormats();
+        const use=['code_128','ean_13','qr_code','code_39','itf','data_matrix','ean_8'].filter(f=>sup.includes(f));
         state.detector=new window.BarcodeDetector({formats:use});
         log('바코드 형식: '+use.join(', '));
       }
 
-      idle.hidden=true; hint.hidden=false; still.hidden=true; video.hidden=false;
-      hint.textContent='라벨을 화면 가운데 두고 천천히 가까이';
+      idle.hidden=true; hint.hidden=false; band.hidden=false; still.hidden=true; video.hidden=false;
+      hint.textContent='라벨 전체가 화면에 들어오게 하세요';
       $('btnStart').textContent='카메라 끄기';
-      $('btnOcr').disabled=false;
+      ['btnOcr','btnShot','btnFocus'].forEach(i=>$(i).disabled=false);
       state.running=true; state.t0=performance.now(); state.frames=0;
+      state.sawLong=false; state.sawSquare=false; state.advised=false;
       loop();
     }catch(e){
       log('카메라 실패: '+e.name+' — '+e.message);
-      idle.textContent='카메라를 열 수 없습니다';
+      idle.textContent='카메라를 열 수 없습니다\n'+e.name;
     }
   }
 
   function stop(){
     state.running=false;
     if(state.stream) state.stream.getTracks().forEach(t=>t.stop());
-    state.stream=null; state.track=null;
-    idle.hidden=false; idle.textContent='카메라 꺼짐'; hint.hidden=true;
+    state.stream=null; state.track=null; state.imgcap=null;
+    idle.hidden=false; idle.textContent='카메라 꺼짐'; hint.hidden=true; band.hidden=true;
     $('btnStart').textContent='카메라 켜기';
-    $('btnTorch').disabled=true; $('zoomRow').hidden=true;
+    ['btnTorch','btnShot','btnFocus'].forEach(i=>$(i).disabled=true);
+    $('zoomRow').hidden=true;
     log('카메라 껐습니다');
   }
 
-  let busy=false, lastAt=0;
+  let busy=false,lastAt=0;
   async function loop(){
     if(!state.running) return;
     const now=performance.now();
@@ -368,16 +342,53 @@
       try{
         const found=await state.detector.detect(video);
         state.frames++; $('mFrames').textContent=state.frames;
-        let got=0;
-        for(const b of found) if(add(b.rawValue,b.format)) got++;
+        for(const b of found) add(b.rawValue,b.format);
         if(found.length) hint.textContent=found.length+'개 감지 · 누적 '+state.items.size+'건';
-      }catch(e){ /* 프레임 단위 실패는 무시 */ }
+        if(!state.advised && state.frames>120 && state.sawSquare && !state.sawLong){
+          state.advised=true;
+          hint.textContent='긴 바코드가 안 잡힙니다 — 조금 더 멀리 떼세요';
+          log('진단: 정사각 코드만 읽히고 있습니다. 긴 바코드의 양 끝이 화면 밖으로 잘린 상태입니다. 확대를 낮추고 라벨에서 더 떨어뜨리세요.');
+        }
+      }catch(e){}
       busy=false;
     }
     requestAnimationFrame(loop);
   }
 
-  /* ── 손전등 · 확대 ── */
+  /* 고해상도 촬영 인식 */
+  $('btnShot').onclick=async()=>{
+    const b=$('btnShot'); b.disabled=true; const old=b.textContent; b.textContent='촬영 중…';
+    try{
+      let src=null;
+      if(state.imgcap){
+        try{
+          const blob=await state.imgcap.takePhoto();
+          src=await createImageBitmap(blob);
+          log('촬영 '+src.width+'×'+src.height);
+        }catch(e){ log('촬영 실패, 화면 캡처로 대체: '+e.message); }
+      }
+      if(!src){
+        const c=document.createElement('canvas');
+        c.width=video.videoWidth; c.height=video.videoHeight;
+        c.getContext('2d').drawImage(video,0,0);
+        src=c; log('화면 캡처 '+c.width+'×'+c.height);
+      }
+      await detectFrom(src,'촬영본');
+    }catch(e){ log('촬영 인식 오류: '+e.message); }
+    finally{ b.textContent=old; b.disabled=false; }
+  };
+
+  /* 초점 다시 */
+  $('btnFocus').onclick=async()=>{
+    if(!state.track) return;
+    try{
+      await state.track.applyConstraints({advanced:[{focusMode:'manual'}]});
+      await new Promise(r=>setTimeout(r,180));
+      await state.track.applyConstraints({advanced:[{focusMode:'continuous'}]});
+      log('초점을 다시 잡습니다');
+    }catch(e){ log('초점 제어 미지원 기기입니다'); }
+  };
+
   $('btnTorch').onclick=async()=>{
     if(!state.track) return;
     state.torch=!state.torch;
@@ -385,39 +396,31 @@
       await state.track.applyConstraints({advanced:[{torch:state.torch}]});
       $('btnTorch').textContent=state.torch?'손전등 끄기':'손전등';
       log('손전등 '+(state.torch?'켬':'끔'));
-    }catch(e){ log('손전등 제어 실패: '+e.message); }
-  };
-  $('zoom').oninput=async e=>{
-    $('zoomVal').textContent=(+e.target.value).toFixed(1)+'×';
-    try{ await state.track.applyConstraints({advanced:[{zoom:+e.target.value}]}); }catch(_){}
+    }catch(e){ log('손전등 제어 실패'); }
   };
 
-  /* ── 사진으로 시험 ── */
+  $('zoom').oninput=async e=>{
+    const v=+e.target.value;
+    $('zoomVal').textContent=v.toFixed(1)+'×';
+    $('zoomWarn').style.display = v>2 ? 'block' : 'none';
+    try{ await state.track.applyConstraints({advanced:[{zoom:v}]}); }catch(_){}
+  };
+
   $('file').onchange=async e=>{
-    const f=e.target.files && e.target.files[0]; if(!f) return;
+    const f=e.target.files&&e.target.files[0]; if(!f) return;
     log('사진 불러옴: '+f.name);
     const img=new Image();
     img.onload=async()=>{
-      const c=still, x=c.getContext('2d');
-      c.width=img.naturalWidth; c.height=img.naturalHeight;
-      x.drawImage(img,0,0);
-      video.hidden=true; still.hidden=false; idle.hidden=true;
-      if(hasBD){
-        try{
-          const d=state.detector||new window.BarcodeDetector();
-          const found=await d.detect(c);
-          log('사진에서 '+found.length+'개 감지');
-          found.forEach(b=>add(b.rawValue,b.format));
-          if(!found.length) log('바코드를 찾지 못했습니다 — 더 가까이·선명하게 찍어 보세요');
-        }catch(err){ log('사진 인식 실패: '+err.message); }
-      }
+      const c=still,x=c.getContext('2d');
+      c.width=img.naturalWidth; c.height=img.naturalHeight; x.drawImage(img,0,0);
+      video.hidden=true; still.hidden=false; idle.hidden=true; band.hidden=true;
+      await detectFrom(c,'사진');
       $('btnOcr').disabled=false;
       URL.revokeObjectURL(img.src);
     };
     img.src=URL.createObjectURL(f);
   };
 
-  /* ── 글자 읽기 (OCR) ── */
   function loadScript(src){
     return new Promise((res,rej)=>{
       const s=document.createElement('script');
@@ -427,21 +430,18 @@
   }
   async function ensureOcr(){
     if(window.Tesseract) return true;
-    const cdns=[
-      'https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.1.0/tesseract.min.js',
-      'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js',
-      'https://unpkg.com/tesseract.js@5/dist/tesseract.min.js'
-    ];
+    const cdns=['https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.1.0/tesseract.min.js',
+                'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js',
+                'https://unpkg.com/tesseract.js@5/dist/tesseract.min.js'];
     for(const u of cdns){
       try{ log('글자 인식 모듈 받는 중…'); await loadScript(u); if(window.Tesseract) return true; }
-      catch(e){ log('내려받기 실패: '+u); }
+      catch(e){ log('내려받기 실패'); }
     }
     return false;
   }
-
   function grabFrame(){
+    if(!still.hidden&&still.width) return still;
     const c=document.createElement('canvas');
-    if(!still.hidden && still.width){ return still; }
     c.width=video.videoWidth; c.height=video.videoHeight;
     c.getContext('2d').drawImage(video,0,0);
     return c;
@@ -450,53 +450,44 @@
   $('btnOcr').onclick=async()=>{
     const btn=$('btnOcr'); btn.disabled=true; const old=btn.textContent; btn.textContent='읽는 중…';
     try{
-      const ready=await ensureOcr();
-      if(!ready){ log('글자 인식 모듈을 불러오지 못했습니다. 인터넷 연결을 확인하세요.'); return; }
-      const src=grabFrame();
-      log('글자 인식 시작 (수 초 걸립니다)');
-      const { data } = await window.Tesseract.recognize(src,'eng');
+      if(!await ensureOcr()){ log('글자 인식 모듈을 불러오지 못했습니다'); return; }
+      log('글자 인식 시작');
+      const { data }=await window.Tesseract.recognize(grabFrame(),'eng');
       const raw=(data.text||'').replace(/\s+/g,' ').toUpperCase();
-      log('읽은 글자: '+raw.slice(0,200));
-
+      log('읽은 글자: '+raw.slice(0,220));
       const mModel=raw.match(/SM-?[A-Z0-9]{6,14}/);
-      const mCap  =raw.match(/\(?\s*(\d{2,4})\s*(GB|TB)\s*\)?/);
-      const mSn   =raw.match(/\bSM[A-Z0-9]{13}\b/);
-
-      if(mModel){ $('sModel').textContent=mModel[0].replace(/^SM(?!-)/,'SM-'); $('sModel').className=''; }
+      const mCap=raw.match(/\(\s*(\d{2,4})\s*(GB|TB)\s*\)/);
+      const mSn=raw.match(/\bSM[A-Z0-9]{13}\b/);
+      if(mModel){ $('sModel').textContent=mModel[0]; $('sModel').className=''; }
       else log('모델코드를 찾지 못했습니다');
       if(mCap){ $('sCap').textContent=mCap[1]+mCap[2]; $('sCap').className=''; }
       else log('용량 표기를 찾지 못했습니다');
-
-      const barcodeSn=[...state.items.values()].find(r=>r.kind==='일련번호 (S/N)');
+      const bs=[...state.items.values()].find(r=>r.kind==='일련번호 (S/N)');
       const el=$('sCross');
-      if(mSn && barcodeSn){
-        const same=mSn[0]===barcodeSn.value;
-        el.textContent = same ? '일치' : '불일치 — 재촬영';
-        el.className=''; el.style.color = same ? 'var(--stamp)' : 'var(--alarm)';
-        log('대조: 바코드 '+barcodeSn.value+' / 글자 '+mSn[0]+' → '+(same?'일치':'불일치'));
-      }else if(barcodeSn){
-        el.textContent='글자에서 일련번호 못 읽음'; el.className='miss';
-        log('대조 불가 — 글자에서 일련번호를 못 읽었습니다 (초점 확인)');
+      if(mSn&&bs){
+        const same=mSn[0]===bs.value;
+        el.textContent=same?'일치':'불일치 — 재촬영'; el.className='';
+        el.style.color=same?'var(--stamp)':'var(--alarm)';
+        log('대조: 바코드 '+bs.value+' / 글자 '+mSn[0]+' → '+(same?'일치':'불일치'));
       }
     }catch(e){ log('글자 인식 실패: '+e.message); }
     finally{ btn.textContent=old; btn.disabled=false; }
   };
 
-  /* ── 기타 ── */
   $('btnReset').onclick=()=>{
     state.items.clear(); state.first=null; state.frames=0; state.t0=performance.now();
+    state.sawLong=false; state.sawSquare=false; state.advised=false;
     $('mCount').textContent='0'; $('mFirst').textContent='—'; $('mFrames').textContent='0';
     ['sModel','sCap','sSerial','sColor','sCross'].forEach(id=>{
       const e=$(id); e.className='miss'; e.style.color='';
-      e.textContent = (id==='sModel'||id==='sCap') ? '글자 읽기 필요' : (id==='sCross'?'미실시':'미인식');
+      e.textContent=(id==='sModel'||id==='sCap')?'글자 읽기 필요':(id==='sCross'?'미실시':'미인식');
     });
     render(); log('기록을 지웠습니다');
   };
   $('btnStart').onclick=start;
   $('btnCopy').onclick=async()=>{
-    const txt=lines.join('\n');
-    try{ await navigator.clipboard.writeText(txt); log('기록을 복사했습니다'); }
-    catch(e){ log('복사 실패 — 아래 기록을 길게 눌러 직접 선택하세요'); }
+    try{ await navigator.clipboard.writeText(lines.join('\n')); log('기록을 복사했습니다'); }
+    catch(e){ log('복사 실패 — 기록을 길게 눌러 직접 선택하세요'); }
   };
   document.querySelector('.filebtn').addEventListener('keydown',e=>{
     if(e.key==='Enter'||e.key===' '){ e.preventDefault(); $('file').click(); }
