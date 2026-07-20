@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{--paper:#E7E4DD;--card:#FBFAF7;--ink:#17181A;--ink-2:#5C5F63;--rule:#C8C4BA;
-    --stamp:#0F6B3F;--alarm:#B3261E;--wait:#8A6A12;--steel:#1F2937;--r:3px}
+    --stamp:#0F6B3F;--alarm:#B3261E;--steel:#1F2937;--r:3px}
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{background:var(--paper);color:var(--ink)}
   body{font-family:'IBM Plex Sans KR',system-ui,sans-serif;font-size:15px;line-height:1.5;
@@ -19,13 +19,10 @@
   h1{font-size:18px;font-weight:700;letter-spacing:-.02em}
   .state{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-2)}
   .state.bad{color:var(--alarm)}
-  .eng{display:flex;gap:6px;margin-bottom:8px;font-family:'IBM Plex Mono',monospace;font-size:10.5px}
-  .eng span{border:1px solid var(--rule);border-radius:var(--r);padding:2px 7px;background:var(--card);color:var(--ink-2)}
-  .eng span.on{border-color:var(--stamp);color:var(--stamp)}
   .stage{position:relative;background:#000;border:2px solid var(--steel);border-radius:var(--r);
     overflow:hidden;aspect-ratio:16/9;cursor:pointer}
   video{width:100%;height:100%;object-fit:cover;display:block}
-  .hit{position:absolute;inset:0;border:5px solid #3ED27B;opacity:0;pointer-events:none}
+  .hit{position:absolute;inset:0;border:6px solid #3ED27B;opacity:0;pointer-events:none}
   .hit.on{opacity:1;transition:opacity .5s}
   .live{position:absolute;left:9px;top:8px;display:flex;align-items:center;gap:6px;color:#fff;
     font-family:'IBM Plex Mono',monospace;font-size:10.5px;text-shadow:0 1px 3px #000;pointer-events:none}
@@ -40,13 +37,13 @@
   #btnFocus{background:var(--steel);color:#fff}
   button:active{background:var(--steel);color:#fff}
   button:disabled{opacity:.4}
-  .last{margin-top:11px;border:2px solid var(--rule);border-radius:var(--r);background:var(--card);padding:12px 14px}
+  .last{margin-top:11px;border:2px solid var(--rule);border-radius:var(--r);background:var(--card);padding:13px 14px}
   .last.on{border-color:var(--stamp);background:#EAF4EE}
   .last .lbl{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.12em;
     text-transform:uppercase;color:var(--ink-2)}
-  .last .sn{font-family:'IBM Plex Mono',monospace;font-size:21px;font-weight:600;word-break:break-all;margin-top:2px}
+  .last .sn{font-family:'IBM Plex Mono',monospace;font-size:22px;font-weight:600;word-break:break-all;margin-top:3px}
   .last .sn em{font-style:normal;background:#F4E9A8;padding:0 3px;border-radius:2px}
-  .last .parts{display:flex;gap:13px;flex-wrap:wrap;margin-top:6px;font-size:13px;color:var(--ink-2)}
+  .last .parts{display:flex;gap:14px;flex-wrap:wrap;margin-top:7px;font-size:13px;color:var(--ink-2)}
   .last .parts b{font-family:'IBM Plex Mono',monospace;color:var(--ink);font-weight:600}
   .last .none{color:var(--ink-2);font-size:14px}
   h2{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);
@@ -54,19 +51,17 @@
     border-bottom:1px solid var(--rule);display:flex;justify-content:space-between}
   ol{list-style:none}
   ol li{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--stamp);
-    border-radius:var(--r);margin-bottom:6px;padding:8px 11px;display:flex;justify-content:space-between;
+    border-radius:var(--r);margin-bottom:6px;padding:9px 12px;display:flex;justify-content:space-between;
     align-items:baseline;gap:10px}
-  ol li .v{font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600}
+  ol li .v{font-family:'IBM Plex Mono',monospace;font-size:16px;font-weight:600}
   ol li .m{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--ink-2);white-space:nowrap}
-  .raw{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--rule);
-    border-radius:var(--r);margin-bottom:5px;padding:6px 10px;display:flex;justify-content:space-between;gap:8px}
-  .raw .v{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--ink-2);word-break:break-all}
-  .raw .m{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ink-2);white-space:nowrap}
-  .empty{border:1px dashed var(--rule);border-radius:var(--r);padding:15px;text-align:center;
+  .empty{border:1px dashed var(--rule);border-radius:var(--r);padding:16px;text-align:center;
     color:var(--ink-2);font-size:13px}
   .log{background:var(--steel);color:#D6D3CB;border-radius:var(--r);padding:9px 11px;
-    font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.6;max-height:140px;
+    font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.6;max-height:130px;
     overflow:auto;white-space:pre-wrap;word-break:break-all}
+  details{margin-top:16px}
+  summary{font-size:12px;color:var(--ink-2);cursor:pointer;padding:4px 0}
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -77,11 +72,6 @@
   <h1>일련번호 스캔</h1>
   <span class="state" id="state">준비 중…</span>
 </header>
-<div class="eng">
-  <span id="e2">ZXing</span>
-  <span id="e1">크롬</span>
-  <span id="e3">해상도 —</span>
-</div>
 
 <div class="stage" id="stage">
   <video id="video" playsinline muted autoplay></video>
@@ -104,12 +94,11 @@
 <h2><span>일련번호 목록</span><span id="tot">0</span></h2>
 <ol id="list"><li style="border-left-color:var(--rule);justify-content:center;color:var(--ink-2);font-size:13px">아직 없습니다</li></ol>
 
-<h2><span>그 밖에 읽힌 값</span><span id="tot2">0</span></h2>
-<div id="other"><div class="empty">없음</div></div>
-
-<h2>기록</h2>
-<div class="log" id="log">대기 중…</div>
-<button id="btnCopy" style="margin-top:8px;width:100%;font-size:14px;padding:11px 8px">전부 복사</button>
+<details>
+  <summary>기록 보기 (문제 있을 때만)</summary>
+  <div class="log" id="log" style="margin-top:6px">대기 중…</div>
+  <button id="btnCopy" style="margin-top:8px;width:100%;font-size:14px;padding:11px 8px">복사</button>
+</details>
 
 </div>
 
@@ -117,9 +106,8 @@
 (function(){
   'use strict';
   const $=id=>document.getElementById(id);
-  const video=$('video'),idle=$('idle'),hit=$('hit'),listEl=$('list'),otherEl=$('other'),logEl=$('log'),lastEl=$('last');
-  const S={stream:null,track:null,bd:null,zx:null,rdr:null,live:false,busy:false,tick:0,
-           sn:new Map(),etc:new Map()};
+  const video=$('video'),idle=$('idle'),hit=$('hit'),listEl=$('list'),logEl=$('log'),lastEl=$('last');
+  const S={stream:null,track:null,bd:null,zx:null,rdr:null,live:false,busy:false,tick:0,sn:new Map()};
 
   const lines=[];
   function log(m){
@@ -130,36 +118,30 @@
   function setState(t,bad){const e=$('state');e.textContent=t;e.className='state'+(bad?' bad':'');}
 
   let actx=null;
-  function beep(hi){
+  function beep(){
     try{
       actx=actx||new (window.AudioContext||window.webkitAudioContext)();
       if(actx.state==='suspended')actx.resume();
       const t=actx.currentTime,o=actx.createOscillator(),g=actx.createGain();
-      o.type='square';o.frequency.setValueAtTime(hi?2400:1400,t);
-      g.gain.setValueAtTime(hi?0.28:0.10,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.09);
-      o.connect(g);g.connect(actx.destination);o.start(t);o.stop(t+0.1);
+      o.type='square';o.frequency.setValueAtTime(2400,t);
+      g.gain.setValueAtTime(0.3,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.1);
+      o.connect(g);g.connect(actx.destination);o.start(t);o.stop(t+0.11);
     }catch(_){}
-    if(hi){hit.classList.add('on');setTimeout(()=>hit.classList.remove('on'),300);}
+    hit.classList.add('on');setTimeout(()=>hit.classList.remove('on'),320);
   }
 
+  /* SM + 13자 만 통과. 나머지는 기록에만 남기고 화면에는 안 띄움 */
   function findSN(v){const m=String(v).toUpperCase().match(/SM[A-Z0-9]{13}/);return m?m[0]:null;}
-  function esc(s){return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
 
   function add(raw,fmt,eng){
     const v=String(raw||'').trim();
     if(!v)return;
     const sn=findSN(v);
-    if(sn){
-      if(S.sn.has(sn))return;
-      S.sn.set(sn,{sn,eng});
-      log('★ 일련번호 ['+eng+'] '+sn);
-      paintLast(sn);paint();beep(true);
-    }else{
-      if(S.etc.has(v))return;
-      S.etc.set(v,{v,fmt,eng});
-      log('  기타 ['+eng+'/'+fmt+'/'+v.length+'자] '+v);
-      paint();beep(false);
-    }
+    if(!sn){ log('무시 ['+eng+'/'+fmt+'] '+v.slice(0,34)); return; }
+    if(S.sn.has(sn))return;
+    S.sn.set(sn,{sn,eng});
+    log('★ '+sn+'  ['+eng+']');
+    paintLast(sn);paint();beep();
   }
   function paintLast(sn){
     lastEl.className='last on';
@@ -174,14 +156,8 @@
     listEl.innerHTML=a.length?a.map(r=>
       '<li><span class="v">'+r.sn.slice(8)+'</span><span class="m">'+r.sn.slice(2,6)+' · '+r.sn[7]+'</span></li>').join('')
       :'<li style="border-left-color:var(--rule);justify-content:center;color:var(--ink-2);font-size:13px">아직 없습니다</li>';
-    const b=[...S.etc.values()].reverse();
-    $('tot2').textContent=b.length;
-    otherEl.innerHTML=b.length?b.map(r=>
-      '<div class="raw"><span class="v">'+esc(r.v)+'</span><span class="m">'+esc(r.eng)+'</span></div>').join('')
-      :'<div class="empty">없음</div>';
   }
 
-  /* ── v7 방식 그대로 ── */
   function cv(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c;}
   function crop(src,sx,sy,sw,sh,scale){
     const c=cv(Math.round(sw*scale),Math.round(sh*scale)),x=c.getContext('2d',{willReadFrequently:true});
@@ -215,9 +191,8 @@
         [Z.BarcodeFormat.CODE_128,Z.BarcodeFormat.CODE_39,Z.BarcodeFormat.ITF,Z.BarcodeFormat.CODABAR]);
       h.set(Z.DecodeHintType.TRY_HARDER,true);
       const r=new Z.MultiFormatReader();r.setHints(h);
-      S.rdr=r;S.zx=Z;$('e2').classList.add('on');log('ZXing 준비됨');
-      return true;
-    }catch(e){log('ZXing 초기화 실패: '+e.message);return false;}
+      S.rdr=r;S.zx=Z;log('ZXing 준비됨');return true;
+    }catch(e){log('ZXing 초기화 실패');return false;}
   }
   function zx(c){
     if(!S.rdr)return null;
@@ -242,7 +217,6 @@
         else if(m===1)c=boost(crop(video,0,0,vw,vh,1));
         else if(m===2)c=crop(video,0,Math.round(vh*0.20),vw,Math.round(vh*0.60),1);
         else c=boost(crop(video,0,Math.round(vh*0.20),vw,Math.round(vh*0.60),1));
-
         if(S.bd){
           try{const f=await S.bd.detect(c);
             for(const b of f) add(b.rawValue,b.format,'크롬');}catch(e){}
@@ -282,13 +256,11 @@
       const st=S.track.getSettings?S.track.getSettings():{};
       const cp=S.track.getCapabilities?S.track.getCapabilities():{};
       if(cp.zoom){try{await S.track.applyConstraints({advanced:[{zoom:cp.zoom.min}]});}catch(_){}}
-      $('e3').textContent=(st.width||'?')+'×'+(st.height||'?');$('e3').classList.add('on');
       log('카메라 '+(st.width||'?')+'×'+(st.height||'?'));
-      if(await loadZX())initZX(); else log('ZXing 내려받기 실패');
+      if(await loadZX())initZX();
       if('BarcodeDetector' in window){
         const sup=await window.BarcodeDetector.getSupportedFormats();
-        S.bd=new window.BarcodeDetector({formats:sup});$('e1').classList.add('on');
-        log('크롬 엔진 준비됨');
+        S.bd=new window.BarcodeDetector({formats:sup});log('크롬 엔진 준비됨');
       }
       if(!S.rdr&&!S.bd){idle.textContent='인식 엔진 없음';setState('엔진 없음',true);return;}
       idle.hidden=true;$('liveTag').hidden=false;$('btnFocus').disabled=false;
@@ -303,17 +275,14 @@
   $('stage').onclick=()=>{if(!actx){try{actx=new (window.AudioContext||window.webkitAudioContext)();}catch(_){}}refocus();};
   $('btnFocus').onclick=refocus;
   $('btnReset').onclick=()=>{
-    S.sn.clear();S.etc.clear();paint();
+    S.sn.clear();paint();
     lastEl.className='last';
     lastEl.innerHTML='<div class="lbl">마지막 인식</div><div class="none">아직 없습니다</div>';
     log('지웠습니다');
   };
   $('btnCopy').onclick=async()=>{
-    const a=[...S.sn.keys()].join('\n');
-    const b=[...S.etc.values()].map(r=>'['+r.eng+'] '+r.v).join('\n');
-    try{await navigator.clipboard.writeText('[일련번호]\n'+a+'\n\n[기타]\n'+b+'\n\n'+lines.join('\n'));
-      log('복사했습니다');}
-    catch(e){log('복사 실패');}
+    try{await navigator.clipboard.writeText([...S.sn.keys()].join('\n')+'\n\n'+lines.join('\n'));
+      log('복사했습니다');}catch(e){log('복사 실패');}
   };
 
   log('시작합니다');
