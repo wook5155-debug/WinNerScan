@@ -119,7 +119,7 @@
 
 <div class="btns">
   <button id="btnFocus" disabled>초점 다시</button>
-  <button id="btnManual">직접 입력</button>
+  <button id="btnClear">칸 비우기</button>
 </div>
 
 <div class="card" id="card">
@@ -245,6 +245,37 @@
     return t;
   }
 
+  /* ── 자리 규칙을 배운 것들 (형식키 → 시작위치·길이) ── */
+  const CUT={};
+
+  function famKey(u){
+    if(/^SM[A-Z0-9]{13}$/.test(u)) return u.slice(0,8);   /* 삼성 : 앞 8자 */
+    return u.slice(0,4)+'#'+u.length;                     /* 그 외 : 앞 4자 + 길이 */
+  }
+  /* 일련번호 추정 : 배운 게 있으면 그대로, 없으면 끝의 숫자덩어리 */
+  function cutSerial(u){
+    const fk=famKey(u), c=CUT[fk];
+    if(c && c.s+c.l<=u.length){
+      const v=u.substr(c.s,c.l);
+      return {serial:v,key:u.slice(0,c.s),learned:true};
+    }
+    if(/^SM[A-Z0-9]{13}$/.test(u)) return {serial:u.slice(8),key:u.slice(0,8),learned:false};
+    const trimmed=u.replace(/[^0-9]+$/,'');       /* 끝의 글자 제거 */
+    const m=trimmed.match(/(\d+)$/);
+    if(m && m[1].length>=SERIAL_TAIL){
+      const v=m[1].slice(-SERIAL_TAIL);
+      const at=trimmed.length-SERIAL_TAIL;
+      return {serial:v,key:u.slice(0,at),learned:false};
+    }
+    return {serial:u,key:null,learned:false};
+  }
+  /* 삼성 모델키 → 기종 (바코드에 들어 있으므로 학습 불필요) */
+  function builtinModel(u){
+    if(!/^SM[A-Z0-9]{13}$/.test(u)) return '';
+    const k='SM-'+u.slice(2,6);
+    return MODELS.indexOf(k)>=0 ? k : k;
+  }
+
   /* ── 바코드 해석: 자르지 않고 원본 보존 ── */
   function readCode(v,fmt){
     const u=String(v||'').trim().toUpperCase();
@@ -253,9 +284,9 @@
     if(isEan && /^\d{13}$/.test(u)) return {type:'upc',raw:u,key:u,serial:null};
     if(/^\d{15}$/.test(u)) return null;              /* IMEI */
     if(/^\d{20,}$/.test(u)) return null;             /* EID */
-    if(u.length>=12) return {type:'unit',raw:u,key:u.slice(0,u.length-SERIAL_TAIL),serial:u.slice(-SERIAL_TAIL)};
-    if(u.length>=8)  return {type:'unit',raw:u,key:null,serial:u};   /* 애플 시리얼 등 */
-    return null;
+    if(u.length<8) return null;
+    const c=cutSerial(u);
+    return {type:'unit',raw:u,key:c.key,serial:c.serial,cutLearned:c.learned};
   }
 
   function lookup(p){
@@ -280,7 +311,9 @@
     }else{
       if(c.raw===r.raw)return;
       if(c.raw){ /* 이미 단말코드가 있으면 새 건으로 */ c=S.cur=newEntry(); }
-      c.raw=r.raw; c.key=r.key; c.serial=r.serial;
+      c.raw=r.raw; c.key=r.key; c.serial=r.serial; c.cutLearned=r.cutLearned;
+      const bm=builtinModel(r.raw);
+      if(bm){ c.model=bm; c.auto.model=true; }
       c.dup=S.seen.has(r.raw)||S.items.some(x=>x.raw===r.raw);
       log('단말 '+r.raw);
     }
@@ -299,22 +332,26 @@
 
   /* ── 결과 카드 ── */
   function paintCard(){
+    if(!S.cur) S.cur=newEntry();
     const c=S.cur;
-    if(!c){ cardEl.className='card';
-      cardEl.innerHTML='<div class="cap">인식 결과</div><div class="none">바코드를 비추면 여기에 나옵니다</div>';
-      return; }
     const ready=c.model&&c.color&&c.cap&&c.serial;
     cardEl.className='card '+(ready?'on':'ask');
 
     let rawHtml='';
     if(c.raw){
-      const head=c.key!==null&&c.key!==undefined&&c.key!==''?c.raw.slice(0,c.raw.length-SERIAL_TAIL):'';
-      const tail=head?c.raw.slice(-SERIAL_TAIL):c.raw;
-      rawHtml='<div class="rawbox">'+esc(head)+'<b>'+esc(tail)+'</b>'+
+      const at=c.serial?c.raw.lastIndexOf(c.serial):-1;
+      const head=at>0?c.raw.slice(0,at):'';
+      const tail=at>=0?c.raw.substr(at,c.serial.length):'';
+      const rest=at>=0?c.raw.slice(at+c.serial.length):'';
+      rawHtml='<div class="rawbox">'+esc(head)+'<b>'+esc(tail)+'</b>'+esc(rest)+
               (c.upc?'<br>UPC '+esc(c.upc):'')+
-              '<small>노란 부분을 일련번호로 잡았습니다 · 라벨과 맞춰보세요</small></div>';
+              '<small>노란 부분을 일련번호로 잡았습니다 · 다르면 연필로 고쳐주세요'+
+              (c.cutLearned?' (자리 학습됨)':'')+'</small></div>';
     }else if(c.upc){
       rawHtml='<div class="rawbox">UPC '+esc(c.upc)+'<small>단말 바코드를 이어서 찍어주세요</small></div>';
+    }else{
+      rawHtml='<div class="rawbox" style="color:var(--ink-2)">바코드 대기 중'+
+              '<small>비추면 자동으로 채워집니다 · 연필을 눌러 직접 넣어도 됩니다</small></div>';
     }
 
     cardEl.innerHTML='<div class="cap">인식 결과'+(c.by?' · 학습표 '+esc(c.by):'')+'</div>'+
@@ -378,7 +415,16 @@
     const c=S.cur; if(!c)return;
     if(k==='model'){ c.model=tidyModel(v); c.auto.model=false; }
     else if(k==='color'){ c.color=String(v||'').trim(); c.auto.color=false; }
-    else if(k==='serial'){ c.serial=String(v||'').trim().toUpperCase(); }
+    else if(k==='serial'){
+      const nv=String(v||'').trim().toUpperCase();
+      if(nv && c.raw && nv!==c.serial){
+        const at=c.raw.lastIndexOf(nv);
+        if(at>=0){ CUT[famKey(c.raw)]={s:at,l:nv.length};
+          c.key=c.raw.slice(0,at); c.cutLearned=true;
+          log('자리 학습 '+famKey(c.raw)+' → '+at+'번째부터 '+nv.length+'자'); }
+      }
+      c.serial=nv;
+    }
     S.edit=null; paintCard();
   }
 
@@ -392,7 +438,7 @@
     S.items.push(rec); S.seen.add(rec.raw); S.queue.push(rec);
     if(rec.key){ S.learn[rec.key]={model:c.model,color:c.color,cap:c.upc?c.cap:''}; }
     log('등록 '+rec.model+' / '+rec.color+' / '+rec.cap+' / '+rec.serial);
-    S.cur=null; S.edit=null; paintCard(); paintList(); flush();
+    S.cur=newEntry(); S.edit=null; paintCard(); paintList(); flush();
   }
 
   function paintList(){
@@ -528,7 +574,7 @@
 
   $('stage').onclick=()=>{if(!actx){try{actx=new (window.AudioContext||window.webkitAudioContext)();}catch(_){}}refocus();};
   $('btnFocus').onclick=refocus;
-  $('btnManual').onclick=()=>{ S.cur=newEntry(); S.edit='serial'; paintCard(); };
+  $('btnClear').onclick=()=>{ S.cur=newEntry(); S.edit=null; paintCard(); };
   $('btnSync').onclick=pullLearn;
   $('btnFlush').onclick=flush;
   $('btnCopy').onclick=async()=>{
@@ -539,6 +585,6 @@
 
   const q=store('queue'); if(q&&q.length){S.queue=q;}
   const it=store('items'); if(it&&it.length){S.items=it;it.forEach(x=>S.seen.add(x.raw));}
-  paintList(); log('시작합니다'); pullLearn(); start(); flush();
+  paintCard(); paintList(); log('시작합니다'); pullLearn(); start(); flush();
 })();
 </script></body></html>
