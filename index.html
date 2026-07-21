@@ -3,27 +3,31 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>단말 스캔</title>
+<title>재고 스캔</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{--paper:#E7E4DD;--card:#FBFAF7;--ink:#17181A;--ink-2:#5C5F63;--rule:#C8C4BA;
-    --stamp:#0F6B3F;--alarm:#B3261E;--wait:#8A6A12;--steel:#1F2937;--r:3px}
+    --stamp:#0F6B3F;--alarm:#B3261E;--wait:#8A6A12;--steel:#1F2937;--hl:#F4E28A;--r:3px}
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{background:var(--paper);color:var(--ink)}
   body{font-family:'IBM Plex Sans KR',system-ui,sans-serif;font-size:15px;line-height:1.5;
     padding:0 0 env(safe-area-inset-bottom);-webkit-font-smoothing:antialiased}
   .wrap{max-width:560px;margin:0 auto;padding:0 12px 30px}
-  header{padding:10px 0 7px;display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
-  h1{font-size:18px;font-weight:700;letter-spacing:-.02em}
-  .state{font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--ink-2)}
-  .state.bad{color:var(--alarm)}
+  header{padding:10px 0 7px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  h1{font-size:18px;font-weight:700;letter-spacing:-.02em;flex:1}
+  .pill{font-family:'IBM Plex Mono',monospace;font-size:11px;padding:3px 8px;border-radius:20px;
+    border:1px solid var(--rule);background:var(--card);color:var(--ink-2);white-space:nowrap}
+  .pill.ok{border-color:var(--stamp);color:var(--stamp)}
+  .pill.no{border-color:var(--alarm);color:var(--alarm)}
+  .pill.wait{border-color:var(--wait);color:var(--wait)}
+
   .stage{position:relative;background:#000;border:2px solid var(--steel);border-radius:var(--r);
     overflow:hidden;aspect-ratio:16/9;cursor:pointer}
   video{width:100%;height:100%;object-fit:cover;display:block}
-  .hit{position:absolute;inset:0;border:6px solid #3ED27B;opacity:0;pointer-events:none}
-  .hit.on{opacity:1;transition:opacity .5s}
+  .flash{position:absolute;inset:0;border:6px solid #3ED27B;opacity:0;pointer-events:none}
+  .flash.on{opacity:1;transition:opacity .5s}
   .live{position:absolute;left:9px;top:8px;display:flex;align-items:center;gap:6px;color:#fff;
     font-family:'IBM Plex Mono',monospace;font-size:10.5px;text-shadow:0 1px 3px #000;pointer-events:none}
   .live i{width:7px;height:7px;border-radius:50%;background:#FF3B30;animation:blink 1.1s infinite}
@@ -31,37 +35,49 @@
   .idle{position:absolute;inset:0;display:grid;place-items:center;color:#8b8f94;font-size:13px;
     padding:16px;text-align:center;white-space:pre-line}
   .tip{margin-top:6px;font-size:12px;color:var(--ink-2);text-align:center}
-  .btns{display:grid;grid-template-columns:2fr 1fr;gap:8px;margin-top:9px}
+
+  .btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:9px}
   button{font-family:'IBM Plex Sans KR',sans-serif;font-weight:600;border:2px solid var(--steel);
-    border-radius:var(--r);background:var(--card);color:var(--ink);cursor:pointer;font-size:15px;padding:13px 8px}
-  #btnFocus{background:var(--steel);color:#fff}
+    border-radius:var(--r);background:var(--card);color:var(--ink);cursor:pointer;font-size:15px;padding:12px 8px}
   button:active{background:var(--steel);color:#fff}
   button:disabled{opacity:.4}
 
-  /* ── 큰 결과판 ── */
-  .board{margin-top:12px;border:2px solid var(--rule);border-radius:var(--r);
-    background:var(--card);padding:16px 16px 14px}
-  .board.on{border-color:var(--stamp);background:#EAF4EE}
-  .board .cap{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.14em;
-    text-transform:uppercase;color:var(--ink-2);margin-bottom:10px}
-  .board .none{color:var(--ink-2);font-size:15px;padding:6px 0 4px}
-  .fld{display:flex;align-items:baseline;gap:12px;padding:5px 0}
-  .fld dt{font-size:12.5px;color:var(--ink-2);width:44px;flex:none}
-  .fld dd{font-family:'IBM Plex Mono',monospace;font-weight:600;letter-spacing:-.01em;
-    word-break:break-all;line-height:1.25}
-  .f-model dd{font-size:25px}
-  .f-color dd{font-size:20px}
-  .f-serial dd{font-size:31px;color:var(--stamp)}
-  .board.on .f-serial dd{color:#0A4D2D}
-  .code{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-2);font-weight:400}
-  .raw{margin-top:11px;padding-top:9px;border-top:1px dotted var(--rule);
-    font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink-2);word-break:break-all}
-  .miss{color:var(--alarm)}
-  .askcolor{margin-top:9px;display:flex;gap:6px}
-  .askcolor input{flex:1;font-family:'IBM Plex Sans KR',sans-serif;font-size:14px;padding:9px 10px;
-    border:2px solid var(--wait);border-radius:var(--r);background:#fff;min-width:0}
-  .askcolor button{width:auto;padding:9px 14px;font-size:14px;border-color:var(--wait);
-    background:var(--wait);color:#fff}
+  /* ── 결과 카드 ── */
+  .card{margin-top:12px;border:2px solid var(--rule);border-radius:var(--r);background:var(--card);padding:14px}
+  .card.on{border-color:var(--stamp)}
+  .card.ask{border-color:var(--wait);background:#FFFCF3}
+  .cap{font-family:'IBM Plex Mono',monospace;font-size:10.5px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--ink-2)}
+  .none{color:var(--ink-2);font-size:15px;padding:10px 0 4px}
+  .rawbox{margin-top:9px;padding:9px 11px;background:#fff;border:1px solid var(--rule);
+    border-radius:var(--r);font-family:'IBM Plex Mono',monospace;font-size:15px;
+    letter-spacing:.02em;word-break:break-all;line-height:1.45}
+  .rawbox b{background:var(--hl);padding:1px 3px;border-radius:2px;font-weight:700}
+  .rawbox small{display:block;font-family:'IBM Plex Sans KR',sans-serif;font-size:11px;
+    color:var(--ink-2);margin-top:4px;letter-spacing:0}
+
+  .fld{display:flex;align-items:center;gap:10px;margin-top:11px;
+    border-bottom:1px solid var(--rule);padding-bottom:9px}
+  .fld:last-of-type{border-bottom:0}
+  .fld .lb{font-size:13px;color:var(--ink-2);width:52px;flex:none}
+  .fld .val{flex:1;min-width:0;font-family:'IBM Plex Mono',monospace;font-weight:600;
+    font-size:24px;letter-spacing:-.01em;word-break:break-all;line-height:1.2}
+  .fld .val.blank{color:var(--alarm);font-size:19px;font-family:'IBM Plex Sans KR',sans-serif}
+  .fld.serial .val{font-size:30px;color:var(--stamp)}
+  .fld .pen{flex:none;width:42px;height:42px;padding:0;font-size:19px;border-width:2px;
+    display:grid;place-items:center;line-height:1}
+  .fld input,.fld select{flex:1;min-width:0;font-family:'IBM Plex Mono',monospace;font-weight:600;
+    font-size:20px;padding:9px 10px;border:2px solid var(--steel);border-radius:var(--r);background:#fff}
+  .caps{display:flex;gap:6px;flex:1}
+  .caps button{flex:1;padding:12px 2px;font-size:15px;font-family:'IBM Plex Mono',monospace;border-width:2px}
+  .caps button.sel{background:var(--steel);color:#fff;border-color:var(--steel)}
+  .src{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--stamp);
+    margin-left:auto;white-space:nowrap;flex:none}
+  .save{width:100%;margin-top:13px;background:var(--stamp);border-color:var(--stamp);color:#fff;
+    font-size:17px;padding:15px 8px}
+  .save:active{background:#0A4D2D}
+  .warn{margin-top:9px;padding:9px 11px;border-radius:var(--r);font-size:13.5px;font-weight:600;
+    border:2px solid var(--alarm);background:#FBEBEA;color:var(--alarm)}
 
   h2{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2);
     font-family:'IBM Plex Mono',monospace;margin:18px 0 6px;padding-bottom:5px;
@@ -70,7 +86,8 @@
   ol li{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--stamp);
     border-radius:var(--r);margin-bottom:6px;padding:9px 12px;display:flex;justify-content:space-between;
     align-items:baseline;gap:10px}
-  ol li .v{font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:600}
+  ol li.pend{border-left-color:var(--wait)}
+  ol li .v{font-family:'IBM Plex Mono',monospace;font-size:18px;font-weight:600}
   ol li .m{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--ink-2);text-align:right}
   .empty{border:1px dashed var(--rule);border-radius:var(--r);padding:16px;text-align:center;
     color:var(--ink-2);font-size:13px}
@@ -79,6 +96,7 @@
   .log{background:var(--steel);color:#D6D3CB;border-radius:var(--r);padding:9px 11px;margin-top:6px;
     font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.6;max-height:130px;
     overflow:auto;white-space:pre-wrap;word-break:break-all}
+  details button{width:100%;margin-top:8px;font-size:14px;padding:11px 8px}
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -86,303 +104,441 @@
 <div class="wrap">
 
 <header>
-  <h1>단말 스캔</h1>
-  <span class="state" id="state">준비 중…</span>
+  <h1>재고 스캔</h1>
+  <span class="pill" id="pNet">연결 확인 중</span>
+  <span class="pill" id="pQueue" hidden>대기 0</span>
 </header>
 
 <div class="stage" id="stage">
   <video id="video" playsinline muted autoplay></video>
-  <div class="hit" id="hit"></div>
+  <div class="flash" id="flash"></div>
   <div class="live" id="liveTag" hidden><i></i>읽는 중</div>
   <div class="idle" id="idle">카메라 켜는 중…</div>
 </div>
-<div class="tip">바코드가 화면 가로를 가득 채우게 · 흐리면 화면을 톡 누르세요</div>
+<div class="tip">바코드를 비추세요 · 흐리면 화면을 톡 누르세요</div>
 
 <div class="btns">
-  <button id="btnFocus" disabled>초점 다시 잡기</button>
-  <button id="btnReset">지우기</button>
+  <button id="btnFocus" disabled>초점 다시</button>
+  <button id="btnManual">직접 입력</button>
 </div>
 
-<div class="board" id="board">
-  <div class="cap">마지막 인식</div>
-  <div class="none">바코드를 비추세요</div>
+<div class="card" id="card">
+  <div class="cap">인식 결과</div>
+  <div class="none">바코드를 비추면 여기에 나옵니다</div>
 </div>
 
-<h2><span>스캔 목록</span><span id="tot">0</span></h2>
+<h2><span>오늘 등록</span><span id="tot">0</span></h2>
 <ol id="list"><li style="border-left-color:var(--rule);justify-content:center;color:var(--ink-2);font-size:13px">아직 없습니다</li></ol>
 
 <details>
-  <summary>색상표 · 기록 (문제 있을 때만)</summary>
-  <button id="btnColors" style="margin-top:8px;font-size:14px;padding:11px 8px">색상표 복사</button>
+  <summary>설정 · 기록</summary>
+  <button id="btnSync">학습표 다시 받기</button>
+  <button id="btnFlush">대기분 전송</button>
   <div class="log" id="log">대기 중…</div>
-  <button id="btnCopy" style="margin-top:8px;font-size:14px;padding:11px 8px">기록 복사</button>
+  <button id="btnCopy">기록 복사</button>
 </details>
 
 </div>
+
+<datalist id="dlModel"></datalist>
+<datalist id="dlColor"></datalist>
 
 <script>
 (function(){
   'use strict';
 
-  /* ═══ 모델키 → 모델명 (매미 재고 데이터에서 추출한 21종) ═══ */
-  const MODEL={
-    A166:'SM-A166L', A175:'SM-A175N', A176:'SM-A176L', A276:'SM-A276K',
-    A356:'SM-A356N', A566:'SM-A566S', F761:'SM-F761N', F766:'SM-F766N',
-    L325:'SM-L325N', M166:'SM-M166S', M176:'SM-M176S', M366:'SM-M366N',
-    S731:'SM-S731N', S931:'SM-S931N', S936:'SM-S936N', S937:'SM-S937N',
-    S938:'SM-S938N', S942:'SM-S942N', S947:'SM-S947N', S948:'SM-S948N',
-    X236:'SM-X236N'
+  /* ═══ 여기 두 줄만 채우세요 ═══════════════════ */
+  const GAS_URL  = 'https://script.google.com/macros/s/여기에_배포주소/exec';
+  const SEND_KEY = 'winner2026';
+  /* ══════════════════════════════════════════ */
+
+  const MODELS=['SM-A166','SM-A175','SM-A176','SM-A276','SM-A356','SM-A566','SM-F761','SM-F766',
+    'SM-L325','SM-M166','SM-M176','SM-M366','SM-S731','SM-S931','SM-S936','SM-S937','SM-S938',
+    'SM-S942','SM-S947','SM-S948','SM-X236',
+    'IP17','IP17E','IP17P','IP17PM','IP16','IP16P','IP16PM','IP15','IP15P','IP15PM','IPA'];
+  const COLORS=['검정','그라파이트','그레이','그린','네이비','딥블루','라이트그레이','라이트그린',
+    '라이트블루','라이트핑크','미드나이트','민트','바이올렛','블랙','블루','블루블랙','블루쉐도우',
+    '세이지','소프트핑크','스카이블루','스타라이트','실버','실버쉐도우','아이스블루','어썸그라파이트',
+    '어썸네이비','오렌지','인디고블랙','제트블랙','코발트바이올렛','티타늄실버','티타늄실버블루',
+    '티타늄아이스블루','티타늄제트블랙','티타늄화이트실버','펄화이트','화이트','회색'];
+  const MCOLOR={
+    'AIP13':['미드나이트'],
+    'AIP15P':['블루'],
+    'AIP16':['블랙'],
+    'AIP17':['화이트','세이지'],
+    'AIP17P':['실버'],
+    'AIP17PM':['실버','딥블루'],
+    'AT-M140L':['블랙','인디고블랙'],
+    'AT-M140S':['블랙','인디고블랙','화이트'],
+    'DE-UIP17':['화이트'],
+    'IP17':['화이트','블랙'],
+    'IP17E':['소프트핑크','블랙'],
+    'SM-A166':['블루블랙'],
+    'SM-A175':['그레이','라이트블루','블랙','검정','회색','블루'],
+    'SM-A176':['블랙','블루','그레이'],
+    'SM-A276':['라이트그린','라이트핑크','블랙'],
+    'SM-A356':['어썸네이비'],
+    'SM-A566':['라이트그레이','어썸그라파이트','블랙'],
+    'SM-F761':['화이트','블랙'],
+    'SM-F766':['블루쉐도우','제트블랙'],
+    'SM-L325':['실버','그라파이트'],
+    'SM-M166':['블랙','라이트그린','라이트핑크','검정','그린'],
+    'SM-M176':['실버','블랙'],
+    'SM-M366':['라이트그린','블랙'],
+    'SM-S731':['네이비','아이스블루','블랙','제트블랙'],
+    'SM-S931':['아이스블루','네이비','실버쉐도우','민트'],
+    'SM-S936':['아이스블루','네이비','민트'],
+    'SM-S937':['티타늄실버','티타늄제트블랙','티타늄아이스블루'],
+    'SM-S938':['티타늄실버블루','티타늄화이트실버'],
+    'SM-S942':['블랙','코발트바이올렛','화이트','스카이블루','라이트블루','바이올렛'],
+    'SM-S947':['화이트','블랙','스카이블루','코발트바이올렛'],
+    'SM-S948':['블랙','화이트','스카이블루','코발트바이올렛','바이올렛'],
+    'SM-X236':['그레이'],
+    'UIP17E':['화이트'],
+    'UIP17PM':['오렌지'],
+    'UIP17PR':['실버'],
+    'UIPA':['검정']
   };
-  /* ═══ 모델키+색상코드 → 색상명 (현장에서 채워짐) ═══ */
-  const COLOR={
-    'A175A':'그레이', 'A175B':'라이트블루', 'S942K':'블랙'
-  };
-  /* ════════════════════════════════════════════ */
+  const CAPS=['128','256','512','1T'];
+  const SERIAL_TAIL=7;
 
   const $=id=>document.getElementById(id);
-  const video=$('video'),idle=$('idle'),hit=$('hit'),listEl=$('list'),logEl=$('log'),board=$('board');
+  const video=$('video'),idle=$('idle'),flash=$('flash'),cardEl=$('card'),listEl=$('list'),logEl=$('log');
   const S={stream:null,track:null,bd:null,zx:null,rdr:null,live:false,busy:false,tick:0,
-           sn:new Map(),newColors:{},cur:null};
+           learn:{},items:[],queue:[],cur:null,seen:new Set(),edit:null};
 
   const lines=[];
-  function log(m){
-    const t=new Date().toTimeString().slice(0,8);
-    lines.push(t+'  '+m);logEl.textContent=lines.slice(-140).join('\n');
-    logEl.scrollTop=logEl.scrollHeight;
-  }
-  function setState(t,bad){const e=$('state');e.textContent=t;e.className='state'+(bad?' bad':'');}
-  function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+  function log(m){const t=new Date().toTimeString().slice(0,8);
+    lines.push(t+'  '+m);logEl.textContent=lines.slice(-160).join('\n');logEl.scrollTop=logEl.scrollHeight;}
+  function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+  function pill(id,txt,cls){const e=$(id);e.textContent=txt;e.className='pill'+(cls?' '+cls:'');e.hidden=false;}
+
+  MODELS.forEach(m=>{const o=document.createElement('option');o.value=m;$('dlModel').appendChild(o);});
+  COLORS.forEach(c=>{const o=document.createElement('option');o.value=c;$('dlColor').appendChild(o);});
+
+  /* ── 저장소 (있으면 쓰고 없으면 조용히 넘어감) ── */
+  function store(k,v){try{ if(v===undefined) return JSON.parse(localStorage.getItem(k)||'null');
+      localStorage.setItem(k,JSON.stringify(v)); }catch(_){ return null; }}
 
   let actx=null;
-  function beep(){
-    try{
-      actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+  function beep(hi){
+    try{ actx=actx||new (window.AudioContext||window.webkitAudioContext)();
       if(actx.state==='suspended')actx.resume();
       const t=actx.currentTime,o=actx.createOscillator(),g=actx.createGain();
-      o.type='square';o.frequency.setValueAtTime(2400,t);
-      g.gain.setValueAtTime(0.3,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.1);
+      o.type='square';o.frequency.setValueAtTime(hi?2400:1300,t);
+      g.gain.setValueAtTime(hi?0.3:0.16,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.1);
       o.connect(g);g.connect(actx.destination);o.start(t);o.stop(t+0.11);
     }catch(_){}
-    hit.classList.add('on');setTimeout(()=>hit.classList.remove('on'),320);
+    if(hi){flash.classList.add('on');setTimeout(()=>flash.classList.remove('on'),320);}
   }
 
-  /* Code128 · Code39 만 통과. QR·매트릭스·EAN·IMEI 는 버림 */
-  function isLinear(fmt){
+  /* ── 접미사 제거 ── */
+  function tidyModel(v){
+    let t=String(v||'').trim().toUpperCase().replace(/\s+/g,'');
+    if(!t)return '';
+    if(t.indexOf('SM')===0){
+      const x=t.match(/([A-Z]\d{3})/);
+      if(x)return 'SM-'+x[1];
+    }
+    const hit=MODELS.filter(m=>m.replace(/[^A-Z0-9]/g,'').indexOf(t.replace(/[^A-Z0-9]/g,''))>=0);
+    if(hit.length===1)return hit[0];
+    return t;
+  }
+
+  /* ── 바코드 해석: 자르지 않고 원본 보존 ── */
+  function readCode(v,fmt){
+    const u=String(v||'').trim().toUpperCase();
     const f=String(fmt).toLowerCase();
-    return f.indexOf('code_128')>=0||f.indexOf('code128')>=0||f==='4'||
-           f.indexOf('code_39')>=0 ||f.indexOf('code39')>=0 ||f==='3';
-  }
-  function parse(v){
-    const u=String(v).toUpperCase();
-    if(/^SM[A-Z0-9]{13}$/.test(u)){
-      const key=u.slice(2,6), cc=u[7];
-      return {raw:u, samsung:true, key:key,
-              model:MODEL[key]||null,
-              cc:cc, color:COLOR[key+cc]||null,
-              serial:u.slice(8)};
-    }
-    return {raw:u, samsung:false, key:null, model:null, cc:null, color:null, serial:u.slice(-7)};
+    const isEan = f.indexOf('ean_13')>=0||f.indexOf('ean13')>=0||f==='2'||/^\d{13}$/.test(u);
+    if(isEan && /^\d{13}$/.test(u)) return {type:'upc',raw:u,key:u,serial:null};
+    if(/^\d{15}$/.test(u)) return null;              /* IMEI */
+    if(/^\d{20,}$/.test(u)) return null;             /* EID */
+    if(u.length>=12) return {type:'unit',raw:u,key:u.slice(0,u.length-SERIAL_TAIL),serial:u.slice(-SERIAL_TAIL)};
+    if(u.length>=8)  return {type:'unit',raw:u,key:null,serial:u};   /* 애플 시리얼 등 */
+    return null;
   }
 
-  function add(raw,fmt,eng){
-    const v=String(raw||'').trim().toUpperCase();
-    if(!v)return;
-    if(!isLinear(fmt)){ log('무시 [형식 '+fmt+'] '+v.slice(0,28)); return; }
-    if(/^\d{15}$/.test(v)){ log('무시 [IMEI] '+v); return; }
-    if(S.sn.has(v))return;
-    const p=parse(v);
-    S.sn.set(v,p);
-    log('★ '+v+'  ['+eng+']');
-    S.cur=p; paintBoard(); paintList(); beep();
+  function lookup(p){
+    if(p.upc && S.learn[p.upc]) return {v:S.learn[p.upc],by:p.upc};
+    if(p.key && S.learn[p.key]) return {v:S.learn[p.key],by:p.key};
+    return null;
   }
 
-  function paintBoard(){
-    const p=S.cur;
-    if(!p){ board.className='board';
-      board.innerHTML='<div class="cap">마지막 인식</div><div class="none">바코드를 비추세요</div>';
-      return; }
-    board.className='board on';
-    let h='<div class="cap">마지막 인식</div>';
-    if(p.samsung){
-      const model = p.model
-        ? esc(p.model)+' <span class="code">('+esc(p.key)+')</span>'
-        : '<span class="miss">미등록</span> <span class="code">('+esc(p.key)+')</span>';
-      const color = p.color
-        ? esc(p.color)+' <span class="code">('+esc(p.cc)+')</span>'
-        : '<span class="miss">미등록</span> <span class="code">(코드 '+esc(p.cc)+')</span>';
-      h+='<dl>'+
-         '<div class="fld f-model"><dt>기종</dt><dd>'+model+'</dd></div>'+
-         '<div class="fld f-color"><dt>색상</dt><dd>'+color+'</dd></div>'+
-         '<div class="fld f-serial"><dt>일련</dt><dd>'+esc(p.serial)+'</dd></div></dl>';
-      if(!p.color){
-        h+='<div class="askcolor"><input id="cin" placeholder="색상명을 적어 등록 (예: 그레이)" '+
-           'autocomplete="off"><button id="cok">등록</button></div>';
-      }
+  function newEntry(){
+    return {raw:'',key:null,serial:'',upc:'',model:'',color:'',cap:'',
+            auto:{model:false,color:false,cap:false},dup:false};
+  }
+
+  function onCode(raw,fmt,eng){
+    const r=readCode(raw,fmt);
+    if(!r){ log('무시 ['+fmt+'] '+String(raw).slice(0,26)); return; }
+    let c=S.cur;
+    if(!c){ c=S.cur=newEntry(); }
+    if(r.type==='upc'){
+      if(c.upc===r.raw)return;
+      c.upc=r.raw; log('UPC '+r.raw);
     }else{
-      h+='<dl><div class="fld f-model"><dt>기종</dt><dd><span class="miss">삼성 형식 아님</span></dd></div>'+
-         '<div class="fld f-serial"><dt>값</dt><dd>'+esc(p.raw)+'</dd></div></dl>';
+      if(c.raw===r.raw)return;
+      if(c.raw){ /* 이미 단말코드가 있으면 새 건으로 */ c=S.cur=newEntry(); }
+      c.raw=r.raw; c.key=r.key; c.serial=r.serial;
+      c.dup=S.seen.has(r.raw)||S.items.some(x=>x.raw===r.raw);
+      log('단말 '+r.raw);
     }
-    h+='<div class="raw">'+esc(p.raw)+'</div>';
-    board.innerHTML=h;
-    const cok=$('cok');
-    if(cok) cok.onclick=()=>{
-      const nm=($('cin').value||'').trim();
-      if(!nm)return;
-      COLOR[p.key+p.cc]=nm; S.newColors[p.key+p.cc]=nm;
-      log('색상 등록 '+p.key+'+'+p.cc+' = '+nm);
-      S.sn.forEach(x=>{ if(x.samsung&&x.key===p.key&&x.cc===p.cc) x.color=nm; });
-      paintBoard(); paintList();
-    };
+    const f=lookup(c);
+    if(f){
+      if(!c.model){c.model=f.v.model||'';c.auto.model=!!f.v.model;}
+      if(!c.color){c.color=f.v.color||'';c.auto.color=!!f.v.color;}
+      /* 용량은 UPC(아이폰)로 확인될 때만 자동 */
+      if(!c.cap && c.upc && S.learn[c.upc] && S.learn[c.upc].cap){
+        c.cap=S.learn[c.upc].cap;c.auto.cap=true;
+      }
+      c.by=f.by;
+    }
+    paintCard(); beep(true);
+  }
+
+  /* ── 결과 카드 ── */
+  function paintCard(){
+    const c=S.cur;
+    if(!c){ cardEl.className='card';
+      cardEl.innerHTML='<div class="cap">인식 결과</div><div class="none">바코드를 비추면 여기에 나옵니다</div>';
+      return; }
+    const ready=c.model&&c.color&&c.cap&&c.serial;
+    cardEl.className='card '+(ready?'on':'ask');
+
+    let rawHtml='';
+    if(c.raw){
+      const head=c.key!==null&&c.key!==undefined&&c.key!==''?c.raw.slice(0,c.raw.length-SERIAL_TAIL):'';
+      const tail=head?c.raw.slice(-SERIAL_TAIL):c.raw;
+      rawHtml='<div class="rawbox">'+esc(head)+'<b>'+esc(tail)+'</b>'+
+              (c.upc?'<br>UPC '+esc(c.upc):'')+
+              '<small>노란 부분을 일련번호로 잡았습니다 · 라벨과 맞춰보세요</small></div>';
+    }else if(c.upc){
+      rawHtml='<div class="rawbox">UPC '+esc(c.upc)+'<small>단말 바코드를 이어서 찍어주세요</small></div>';
+    }
+
+    cardEl.innerHTML='<div class="cap">인식 결과'+(c.by?' · 학습표 '+esc(c.by):'')+'</div>'+
+      rawHtml+
+      (c.dup?'<div class="warn">이미 오늘 등록된 단말입니다</div>':'')+
+      fld('model','기종',c.model,c.auto.model)+
+      fld('color','색상',c.color,c.auto.color)+
+      capRow(c)+
+      fld('serial','일련',c.serial,false,'serial')+
+      '<button class="save" id="bSave"'+(ready&&!c.dup?'':' disabled')+'>등록</button>';
+
+    ['model','color','serial'].forEach(k=>{
+      const b=$('pen_'+k); if(b) b.onclick=()=>openEdit(k);
+      const i=$('in_'+k);
+      if(i){ i.focus();
+        i.onblur=()=>commit(k,i.value);
+        i.onkeydown=e=>{ if(e.key==='Enter'){e.preventDefault();i.blur();} }; }
+    });
+    const cr=$('capRow');
+    if(cr) cr.querySelectorAll('button').forEach(b=>{
+      b.onclick=()=>{ c.cap=b.dataset.c; c.auto.cap=false; paintCard(); };
+    });
+    const sv=$('bSave'); if(sv) sv.onclick=save;
+  }
+
+  function fld(k,label,val,auto,extra){
+    if(S.edit===k){
+      if(k==='color') fillColors();
+      const list=k==='model'?' list="dlModel"':(k==='color'?' list="dlColor"':'');
+      return '<div class="fld '+(extra||'')+'"><span class="lb">'+label+'</span>'+
+        '<input id="in_'+k+'" value="'+esc(val)+'"'+list+' autocomplete="off">'+
+        '<button class="pen" id="pen_'+k+'">✓</button></div>';
+    }
+    const shown = val ? esc(val) : '<span class="blank">비어 있음</span>';
+    return '<div class="fld '+(extra||'')+'"><span class="lb">'+label+'</span>'+
+      '<span class="val'+(val?'':' blank')+'">'+shown+'</span>'+
+      (auto?'<span class="src">자동</span>':'')+
+      '<button class="pen" id="pen_'+k+'">✎</button></div>';
+  }
+  function capRow(c){
+    return '<div class="fld"><span class="lb">용량</span><div class="caps" id="capRow">'+
+      CAPS.map(x=>'<button type="button" data-c="'+x+'"'+(c.cap===x?' class="sel"':'')+'>'+x+'</button>').join('')+
+      '</div>'+(c.auto.cap?'<span class="src">자동</span>':'')+'</div>';
+  }
+  /* 기종이 정해져 있으면 그 기종의 색상만 후보로 */
+  function fillColors(){
+    const c=S.cur, dl=$('dlColor');
+    let list=(c&&c.model&&MCOLOR[c.model])?MCOLOR[c.model].slice():[];
+    const seen={}; list.forEach(x=>seen[x]=1);
+    Object.keys(S.learn).forEach(k=>{
+      const v=S.learn[k];
+      if(v&&v.color&&(!c||!c.model||v.model===c.model)&&!seen[v.color]){list.push(v.color);seen[v.color]=1;}
+    });
+    if(!list.length) list=COLORS.slice();
+    dl.innerHTML='';
+    list.forEach(x=>{const o=document.createElement('option');o.value=x;dl.appendChild(o);});
+  }
+
+  function openEdit(k){ S.edit=k; paintCard(); }
+  function commit(k,v){
+    const c=S.cur; if(!c)return;
+    if(k==='model'){ c.model=tidyModel(v); c.auto.model=false; }
+    else if(k==='color'){ c.color=String(v||'').trim(); c.auto.color=false; }
+    else if(k==='serial'){ c.serial=String(v||'').trim().toUpperCase(); }
+    S.edit=null; paintCard();
+  }
+
+  /* ── 등록 ── */
+  function save(){
+    const c=S.cur; if(!c)return;
+    if(!c.model||!c.color||!c.cap||!c.serial){ alert('빈 칸을 채워주세요'); return; }
+    const rec={at:new Date().toISOString(),raw:c.raw||c.upc,upc:c.upc||'',
+               model:c.model,color:c.color,cap:c.cap,serial:c.serial,
+               key:c.upc||c.key||''};
+    S.items.push(rec); S.seen.add(rec.raw); S.queue.push(rec);
+    if(rec.key){ S.learn[rec.key]={model:c.model,color:c.color,cap:c.upc?c.cap:''}; }
+    log('등록 '+rec.model+' / '+rec.color+' / '+rec.cap+' / '+rec.serial);
+    S.cur=null; S.edit=null; paintCard(); paintList(); flush();
   }
 
   function paintList(){
-    const a=[...S.sn.values()].reverse();
+    const a=S.items.slice().reverse();
     $('tot').textContent=a.length;
-    listEl.innerHTML=a.length?a.map(p=>{
-      const right = p.samsung
-        ? esc((p.model||p.key)+' · '+(p.color||('코드 '+p.cc)))
-        : '삼성 형식 아님';
-      return '<li><span class="v">'+esc(p.samsung?p.serial:p.raw)+'</span>'+
-             '<span class="m">'+right+'</span></li>';
-    }).join('')
-      :'<li style="border-left-color:var(--rule);justify-content:center;color:var(--ink-2);font-size:13px">아직 없습니다</li>';
+    listEl.innerHTML=a.length?a.map(x=>{
+      const pend=S.queue.indexOf(x)>=0;
+      return '<li class="'+(pend?'pend':'')+'"><span class="v">'+esc(x.serial)+'</span>'+
+        '<span class="m">'+esc(x.model)+' · '+esc(x.color)+' · '+esc(x.cap)+(pend?' · 대기':'')+'</span></li>';
+    }).join('') : '<li style="border-left-color:var(--rule);justify-content:center;color:var(--ink-2);font-size:13px">아직 없습니다</li>';
+    if(S.queue.length) pill('pQueue','대기 '+S.queue.length,'wait'); else $('pQueue').hidden=true;
+    store('queue',S.queue); store('items',S.items);
   }
 
-  function cv(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c;}
-  function crop(src,sx,sy,sw,sh,scale){
-    const c=cv(Math.round(sw*scale),Math.round(sh*scale)),x=c.getContext('2d',{willReadFrequently:true});
-    x.imageSmoothingQuality='high';x.drawImage(src,sx,sy,sw,sh,0,0,c.width,c.height);return c;
+  /* ── 시트 통신 ── */
+  const configured = GAS_URL.indexOf('여기에_배포주소')<0;
+  async function pullLearn(){
+    if(!configured){ pill('pNet','주소 미설정','no'); return; }
+    try{
+      const r=await fetch(GAS_URL+'?key='+encodeURIComponent(SEND_KEY)+'&t='+Date.now());
+      const j=await r.json();
+      if(j.ok){ S.learn=j.learn||{}; store('learn',S.learn);
+        pill('pNet','학습표 '+Object.keys(S.learn).length+'건','ok');
+        log('학습표 '+Object.keys(S.learn).length+'건 받음'); }
+      else { pill('pNet','조회 실패','no'); log('조회 실패: '+(j.error||'')); }
+    }catch(e){
+      const cached=store('learn'); if(cached){S.learn=cached;}
+      pill('pNet','오프라인'+(cached?' (저장분 사용)':''),'wait'); log('조회 실패: '+e.message);
+    }
   }
+  async function flush(){
+    if(!S.queue.length||!configured)return;
+    const batch=S.queue.slice();
+    try{
+      const r=await fetch(GAS_URL,{method:'POST',redirect:'follow',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body:JSON.stringify({key:SEND_KEY,rows:batch})});
+      const j=await r.json();
+      if(j.ok){ S.queue=S.queue.filter(x=>batch.indexOf(x)<0);
+        pill('pNet','전송 완료','ok'); log('전송 '+batch.length+'건'); paintList(); }
+      else { pill('pNet','전송 실패','no'); log('전송 실패: '+(j.error||'')); }
+    }catch(e){ pill('pNet','오프라인 · 대기 중','wait'); log('전송 보류: '+e.message); }
+  }
+  setInterval(flush,20000);
+  window.addEventListener('online',()=>{pullLearn();flush();});
+
+  /* ── 카메라 · 인식 ── */
+  function cv(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c;}
+  function crop(src,sx,sy,sw,sh,sc){
+    const c=cv(Math.round(sw*sc),Math.round(sh*sc)),x=c.getContext('2d',{willReadFrequently:true});
+    x.imageSmoothingQuality='high';x.drawImage(src,sx,sy,sw,sh,0,0,c.width,c.height);return c;}
   function boost(c){
     const x=c.getContext('2d',{willReadFrequently:true}),d=x.getImageData(0,0,c.width,c.height),p=d.data;
     let mn=255,mx=0;
-    for(let i=0;i<p.length;i+=32){const g=(p[i]*299+p[i+1]*587+p[i+2]*114)/1000;
-      if(g<mn)mn=g;if(g>mx)mx=g;}
+    for(let i=0;i<p.length;i+=32){const g=(p[i]*299+p[i+1]*587+p[i+2]*114)/1000;if(g<mn)mn=g;if(g>mx)mx=g;}
     const rg=Math.max(1,mx-mn);
-    for(let i=0;i<p.length;i+=4){
-      let g=(p[i]*299+p[i+1]*587+p[i+2]*114)/1000;
+    for(let i=0;i<p.length;i+=4){let g=(p[i]*299+p[i+1]*587+p[i+2]*114)/1000;
       g=Math.max(0,Math.min(255,(g-mn)*255/rg));p[i]=p[i+1]=p[i+2]=g;}
-    x.putImageData(d,0,0);return c;
-  }
+    x.putImageData(d,0,0);return c;}
 
   function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');
     s.src=src;s.onload=res;s.onerror=()=>rej(new Error(src));document.head.appendChild(s);});}
   async function loadZX(){
     for(const u of ['https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js',
-                    'https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js',
-                    'https://cdn.jsdelivr.net/npm/@zxing/library@0.20.0/umd/index.min.js']){
+                    'https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js']){
       try{await loadScript(u);if(window.ZXing)return true;}catch(e){}}
-    return false;
-  }
+    return false;}
   function initZX(){
-    try{
-      const Z=window.ZXing,h=new Map();
-      h.set(Z.DecodeHintType.POSSIBLE_FORMATS,[Z.BarcodeFormat.CODE_128,Z.BarcodeFormat.CODE_39]);
+    try{const Z=window.ZXing,h=new Map();
+      h.set(Z.DecodeHintType.POSSIBLE_FORMATS,
+        [Z.BarcodeFormat.CODE_128,Z.BarcodeFormat.CODE_39,Z.BarcodeFormat.EAN_13]);
       h.set(Z.DecodeHintType.TRY_HARDER,true);
-      const r=new Z.MultiFormatReader();r.setHints(h);
-      S.rdr=r;S.zx=Z;log('ZXing 준비됨');return true;
-    }catch(e){log('ZXing 초기화 실패');return false;}
-  }
+      const r=new Z.MultiFormatReader();r.setHints(h);S.rdr=r;S.zx=Z;log('ZXing 준비됨');return true;
+    }catch(e){return false;}}
   function zx(c){
     if(!S.rdr)return null;
-    try{
-      const Z=S.zx;
+    try{const Z=S.zx;
       const b=new Z.BinaryBitmap(new Z.HybridBinarizer(new Z.HTMLCanvasElementLuminanceSource(c)));
       const r=S.rdr.decode(b);
       return r?{text:r.getText(),fmt:String(r.getBarcodeFormat())}:null;
-    }catch(e){return null;}
-    finally{try{S.rdr.reset();}catch(_){}}
-  }
+    }catch(e){return null;}finally{try{S.rdr.reset();}catch(_){}}}
 
   async function loop(){
     if(!S.live)return;
-    if(!S.busy&&video.readyState>=2&&video.videoWidth){
+    const typing=document.activeElement&&document.activeElement.tagName==='INPUT';
+    if(!S.busy&&!typing&&video.readyState>=2&&video.videoWidth){
       S.busy=true;
       try{
-        const vw=video.videoWidth,vh=video.videoHeight;
-        const m=S.tick%4;S.tick++;
+        const vw=video.videoWidth,vh=video.videoHeight,m=S.tick%4;S.tick++;
         let c;
         if(m===0)c=crop(video,0,0,vw,vh,1);
         else if(m===1)c=boost(crop(video,0,0,vw,vh,1));
         else if(m===2)c=crop(video,0,Math.round(vh*0.20),vw,Math.round(vh*0.60),1);
         else c=boost(crop(video,0,Math.round(vh*0.20),vw,Math.round(vh*0.60),1));
-        if(S.bd){
-          try{const f=await S.bd.detect(c);
-            for(const b of f) add(b.rawValue,b.format,'크롬');}catch(e){}
-        }
-        const z=zx(c);
-        if(z) add(z.text,z.fmt,'ZXing');
+        if(S.bd){try{const f=await S.bd.detect(c);for(const b of f)onCode(b.rawValue,b.format,'크롬');}catch(e){}}
+        const z=zx(c); if(z) onCode(z.text,z.fmt,'ZXing');
       }catch(e){}
       S.busy=false;
     }
     setTimeout(()=>requestAnimationFrame(loop),50);
   }
-
   async function refocus(){
     if(!S.track)return;
-    try{
-      await S.track.applyConstraints({advanced:[{focusMode:'manual'}]});
+    try{ await S.track.applyConstraints({advanced:[{focusMode:'manual'}]});
       await new Promise(r=>setTimeout(r,140));
-      await S.track.applyConstraints({advanced:[{focusMode:'continuous'}]});
-    }catch(e){}
+      await S.track.applyConstraints({advanced:[{focusMode:'continuous'}]}); }catch(e){}
   }
-
   async function start(){
-    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
-      idle.textContent='카메라를 지원하지 않는 브라우저입니다';setState('카메라 불가',true);return;}
     try{
       let s0=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});
-      const t0=s0.getVideoTracks()[0];
-      const c0=t0.getCapabilities?t0.getCapabilities():{};
-      const mw=c0.width&&c0.width.max?c0.width.max:1920, mh=c0.height&&c0.height.max?c0.height.max:1080;
+      const c0=s0.getVideoTracks()[0].getCapabilities?s0.getVideoTracks()[0].getCapabilities():{};
+      const mw=c0.width&&c0.width.max?c0.width.max:1920,mh=c0.height&&c0.height.max?c0.height.max:1080;
       s0.getTracks().forEach(t=>t.stop());
-      S.stream=await navigator.mediaDevices.getUserMedia({
-        video:{facingMode:{ideal:'environment'},
-               width:{ideal:Math.min(mw,3840)},height:{ideal:Math.min(mh,2160)},
-               frameRate:{ideal:30},advanced:[{focusMode:'continuous'}]},audio:false});
+      S.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'},
+        width:{ideal:Math.min(mw,3840)},height:{ideal:Math.min(mh,2160)},
+        advanced:[{focusMode:'continuous'}]},audio:false});
       video.srcObject=S.stream;await video.play();
       S.track=S.stream.getVideoTracks()[0];
-      const st=S.track.getSettings?S.track.getSettings():{};
       const cp=S.track.getCapabilities?S.track.getCapabilities():{};
       if(cp.zoom){try{await S.track.applyConstraints({advanced:[{zoom:cp.zoom.min}]});}catch(_){}}
+      const st=S.track.getSettings?S.track.getSettings():{};
       log('카메라 '+(st.width||'?')+'×'+(st.height||'?'));
       if(await loadZX())initZX();
       if('BarcodeDetector' in window){
         const sup=await window.BarcodeDetector.getSupportedFormats();
-        const use=['code_128','code_39'].filter(f=>sup.includes(f));
-        if(use.length){S.bd=new window.BarcodeDetector({formats:use});log('크롬 엔진 준비됨');}
+        const use=['code_128','code_39','ean_13'].filter(f=>sup.includes(f));
+        if(use.length)S.bd=new window.BarcodeDetector({formats:use});
       }
-      if(!S.rdr&&!S.bd){idle.textContent='인식 엔진 없음';setState('엔진 없음',true);return;}
       idle.hidden=true;$('liveTag').hidden=false;$('btnFocus').disabled=false;
-      setState('읽는 중');S.live=true;loop();
-      setInterval(()=>{if(S.live&&S.sn.size===0)refocus();},3500);
-    }catch(e){
-      idle.textContent='카메라를 열 수 없습니다\n'+e.name;
-      setState('카메라 실패: '+e.name,true);log('카메라 실패: '+e.name);
-    }
+      S.live=true;loop();
+    }catch(e){ idle.textContent='카메라를 열 수 없습니다\n'+e.name; log('카메라 실패: '+e.name); }
   }
 
-  $('stage').onclick=e=>{
-    if(e.target.tagName==='INPUT')return;
-    if(!actx){try{actx=new (window.AudioContext||window.webkitAudioContext)();}catch(_){}}
-    refocus();
-  };
+  $('stage').onclick=()=>{if(!actx){try{actx=new (window.AudioContext||window.webkitAudioContext)();}catch(_){}}refocus();};
   $('btnFocus').onclick=refocus;
-  $('btnReset').onclick=()=>{
-    S.sn.clear();S.cur=null;paintBoard();paintList();log('지웠습니다');
-  };
-  $('btnColors').onclick=async()=>{
-    const rows=Object.keys(S.newColors).map(k=>k.slice(0,4)+'\t'+k.slice(4)+'\t'+S.newColors[k]);
-    const txt=rows.length?('모델키\t색상코드\t색상명\n'+rows.join('\n')):'이번에 새로 등록한 색상이 없습니다';
-    try{await navigator.clipboard.writeText(txt);log('색상표 복사됨 ('+rows.length+'건)');}
-    catch(e){log('복사 실패');}
-  };
+  $('btnManual').onclick=()=>{ S.cur=newEntry(); S.edit='serial'; paintCard(); };
+  $('btnSync').onclick=pullLearn;
+  $('btnFlush').onclick=flush;
   $('btnCopy').onclick=async()=>{
-    try{await navigator.clipboard.writeText([...S.sn.keys()].join('\n')+'\n\n'+lines.join('\n'));
+    const rows=S.items.map(x=>[x.raw,x.model,x.color,x.cap,x.serial].join('\t')).join('\n');
+    try{await navigator.clipboard.writeText('원본\t기종\t색상\t용량\t일련\n'+rows+'\n\n'+lines.join('\n'));
       log('복사했습니다');}catch(e){log('복사 실패');}
   };
 
-  log('시작합니다');
-  start();
+  const q=store('queue'); if(q&&q.length){S.queue=q;}
+  const it=store('items'); if(it&&it.length){S.items=it;it.forEach(x=>S.seen.add(x.raw));}
+  paintList(); log('시작합니다'); pullLearn(); start(); flush();
 })();
 </script></body></html>
